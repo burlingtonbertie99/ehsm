@@ -390,6 +390,175 @@ extern "C"
         return ret;
     }
 
+
+
+
+
+
+
+
+
+
+
+    uint32_t ffi_exportKeyMaterial(JsonObj payloadJson, char *respJson)
+    {
+        RetJsonObj retJsonObj;
+        JsonObj tokenJsonObj;
+
+        ehsm_keyblob_t *cmk = NULL;
+        ehsm_status_t ret = EH_OK;
+        ehsm_data_t *key_material = NULL;
+
+        JSON2STRUCT(payloadJson, cmk);
+
+        string key_material_str_base64 = payloadJson.readData_string("key_material");
+        string key_material_str = base64_decode(key_material_str_base64);
+
+        key_material = (ehsm_data_t *)malloc(APPEND_SIZE_TO_DATA_T(key_material_str.length()));
+        key_material->datalen = key_material_str.length();
+        memcpy_s(key_material->data, key_material->datalen, key_material_str.c_str(), key_material->datalen);
+
+        ehsm_padding_mode_t padding_mode = (ehsm_padding_mode_t)payloadJson.readData_uint32("padding_mode");
+
+        ret = ImportKeyMaterial(cmk, padding_mode, key_material);
+        if (ret != EH_OK)
+        {
+            retJsonObj.setCode(retJsonObj.CODE_FAILED);
+            retJsonObj.setMessage("Import key failed.");
+            goto out;
+        }
+
+        STRUCT2JSON(retJsonObj, cmk);
+
+    out:
+        SAFE_FREE(cmk);
+        SAFE_FREE(key_material);
+        retJsonObj.toChar(respJson);
+        return ret;
+    }
+
+    /**
+     * @brief generate RSA keypair, store in external key and return public key.
+     *
+     * @param payload : Pass in the key parameter in the form of JSON string
+                {
+                    cmk : a base64 string,
+                    keyspec : int,
+                }
+     *
+     * @return char*
+     * [string] json string
+        {
+            code: int,
+            message: string,
+            result: {
+                pubkey : a base64 string，
+                sessionkey : a base64 string,
+        }
+     */
+    uint32_t ffi_getParametersForExport(JsonObj payloadJson, char *respJson)
+    {
+        ehsm_status_t ret = EH_OK;
+        ehsm_keyblob_t *cmk = NULL;
+
+        ehsm_keyblob_t cmk_tmp;
+        ehsm_data_t *pubkey = NULL;
+        ehsm_data_t pubkey_tmp = {0};
+
+        char *publicKey = NULL;
+        ehsm_keyblob_t *sessionkey = NULL;
+        RetJsonObj retJsonObj;
+
+        memset(&cmk_tmp, 0, sizeof(cmk_tmp));
+
+        JSON2STRUCT(payloadJson, cmk);
+
+        ehsm_keyspec_t keyspec = (ehsm_keyspec_t)payloadJson.readData_uint32("keyspec");
+
+        memcpy_s(&cmk_tmp, sizeof(ehsm_keyblob_t), cmk, sizeof(ehsm_keyblob_t));
+
+        ret = GetParametersForImport(&cmk_tmp, keyspec, &pubkey_tmp);
+        if (ret != EH_OK)
+        {
+            retJsonObj.setCode(retJsonObj.CODE_FAILED);
+            retJsonObj.setMessage("Server exception.");
+            goto out;
+        }
+
+        if (pubkey_tmp.datalen == 0 || pubkey_tmp.datalen > UINT16_MAX)
+        {
+            retJsonObj.setCode(retJsonObj.CODE_FAILED);
+            retJsonObj.setMessage("Server exception.");
+            goto out;
+        }
+
+        cmk = (ehsm_keyblob_t *)malloc(APPEND_SIZE_TO_KEYBLOB_T(cmk_tmp.keybloblen));
+        if (cmk == NULL)
+        {
+            retJsonObj.setCode(retJsonObj.CODE_FAILED);
+            retJsonObj.setMessage("Server exception.");
+            goto out;
+        }
+
+        pubkey = (ehsm_data_t *)malloc(APPEND_SIZE_TO_DATA_T(pubkey_tmp.datalen));
+        if (pubkey == NULL)
+        {
+            retJsonObj.setCode(retJsonObj.CODE_FAILED);
+            retJsonObj.setMessage("Server exception.");
+            goto out;
+        }
+
+        pubkey->datalen = pubkey_tmp.datalen;
+        cmk->keybloblen = cmk_tmp.keybloblen;
+        cmk->metadata = cmk_tmp.metadata;
+
+        ret = GetParametersForImport(cmk, keyspec, pubkey);
+        if (ret != EH_OK)
+        {
+            retJsonObj.setCode(retJsonObj.CODE_FAILED);
+            retJsonObj.setMessage("Server exception.");
+            goto out;
+        }
+
+        publicKey = (char *)malloc(pubkey->datalen);
+        memcpy_s(publicKey, pubkey->datalen, pubkey->data, pubkey->datalen);
+        publicKey[pubkey->datalen] = '\0';
+        retJsonObj.addData_string("pubkey", publicKey);
+
+        // generate a 32B cmk for hmac sign.
+        sessionkey = (ehsm_keyblob_t *)malloc(APPEND_SIZE_TO_KEYBLOB_T(EH_AES_GCM_256_SIZE));
+
+        sessionkey->metadata.keyspec = EH_AES_GCM_256;
+        sessionkey->metadata.origin = EH_INTERNAL_KEY;
+        sessionkey->metadata.keyusage = EH_KEYUSAGE_ENCRYPT_DECRYPT;
+        sessionkey->keybloblen = EH_AES_GCM_256_SIZE;
+        ret = CreateKey(sessionkey);
+
+        if (ret != EH_OK)
+        {
+            retJsonObj.setCode(retJsonObj.CODE_FAILED);
+            retJsonObj.setMessage("Server exception.");
+            goto out;
+        }
+
+        STRUCT2JSON(retJsonObj, sessionkey);
+        STRUCT2JSON(retJsonObj, cmk);
+
+    out:
+        SAFE_FREE(publicKey);
+        SAFE_FREE(cmk);
+        SAFE_FREE(pubkey);
+        SAFE_FREE(sessionkey);
+        retJsonObj.toChar(respJson);
+        return ret;
+    }
+
+
+
+
+
+
+
     /**
      * @brief Decrypt user's key and store as an external key.
      *

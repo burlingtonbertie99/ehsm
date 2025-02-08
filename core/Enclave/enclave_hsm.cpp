@@ -97,6 +97,44 @@ static size_t get_signature_length(ehsm_keyspec_t keyspec)
     }
 }
 
+
+
+
+
+static sgx_status_t check_export_key_length(int keylen, ehsm_keyspec_t keyspec)
+{
+    sgx_status_t ret = SGX_SUCCESS;
+    switch (keyspec)
+    {
+        case EH_SM4_CTR:
+        case EH_SM4_CBC:
+        case EH_AES_GCM_128:
+            if (keylen != 16)
+                ret = SGX_ERROR_UNEXPECTED;
+        break;
+        case EH_AES_GCM_192:
+            if (keylen != 24)
+                ret = SGX_ERROR_UNEXPECTED;
+        break;
+        case EH_AES_GCM_256:
+            if (keylen != 32)
+                ret = SGX_ERROR_UNEXPECTED;
+        break;
+        default:
+            ret = SGX_ERROR_UNEXPECTED;
+    }
+    return ret;
+}
+
+
+
+
+
+
+
+
+
+
 static sgx_status_t check_import_key_length(int keylen, ehsm_keyspec_t keyspec)
 {
     sgx_status_t ret = SGX_SUCCESS;
@@ -232,6 +270,86 @@ sgx_status_t enclave_create_key(ehsm_keyblob_t *cmk, size_t cmk_size)
 
     return ret;
 }
+
+
+
+sgx_status_t enclave_get_parameters_for_export(ehsm_keyblob_t *cmk, size_t cmk_size,
+                                               ehsm_keyspec_t keyspec,
+                                               ehsm_data_t *pubkey, size_t pubkey_size)
+{
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+
+    if (cmk == NULL ||
+        cmk_size != APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen) ||
+        cmk->metadata.origin != EH_EXTERNAL_KEY ||
+        pubkey_size != APPEND_SIZE_TO_DATA_T(pubkey->datalen) ||
+        (cmk->metadata.keyusage != EH_KEYUSAGE_ENCRYPT_DECRYPT && cmk->metadata.keyusage != EH_KEYUSAGE_SIGN_VERIFY))
+    {
+        return SGX_ERROR_INVALID_PARAMETER;
+    }
+
+    ret = ehsm_calc_keyblob_size(keyspec, cmk->keybloblen);
+    if (ret != SGX_SUCCESS)
+    {
+        return ret;
+    }
+
+    ret = ehsm_create_rsa_key_for_BYOK(cmk, pubkey, keyspec);
+
+    return ret;
+}
+
+sgx_status_t enclave_export_key_material(ehsm_keyblob_t *cmk, size_t cmk_size,
+                                         ehsm_padding_mode_t padding_mode,
+                                         ehsm_data_t *key_material, size_t key_material_size)
+{
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+
+    if (cmk == NULL ||
+        cmk_size != APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen) ||
+        cmk->metadata.origin != EH_EXTERNAL_KEY ||
+        key_material_size != APPEND_SIZE_TO_DATA_T(key_material->datalen) ||
+        (cmk->metadata.keyusage != EH_KEYUSAGE_ENCRYPT_DECRYPT && cmk->metadata.keyusage != EH_KEYUSAGE_SIGN_VERIFY))
+    {
+        return SGX_ERROR_INVALID_PARAMETER;
+    }
+
+    ehsm_data_t import_key_tmp = {0};
+
+    ret = ehsm_rsa_decrypt(cmk, padding_mode, key_material, &import_key_tmp);
+    if (ret != SGX_SUCCESS)
+    {
+        return ret;
+    }
+
+    ehsm_data_t *import_key = (ehsm_data_t *)malloc(APPEND_SIZE_TO_DATA_T(import_key_tmp.datalen));
+    import_key->datalen = import_key_tmp.datalen;
+
+    ret = ehsm_rsa_decrypt(cmk, padding_mode, key_material, import_key);
+    if (ret != SGX_SUCCESS)
+        goto out;
+
+    ret = check_import_key_length(import_key->datalen, cmk->metadata.keyspec);
+    if (ret != SGX_SUCCESS)
+        goto out;
+
+    memset_s(cmk->keyblob, cmk->keybloblen, 0, cmk->keybloblen);
+
+    ret = ehsm_create_keyblob(import_key->data,
+                              import_key->datalen,
+                              (sgx_aes_gcm_data_ex_t *)cmk->keyblob);
+
+    cmk->keybloblen = import_key->datalen + sizeof(sgx_aes_gcm_data_ex_t);
+
+    if (ret != SGX_SUCCESS)
+        goto out;
+
+out:
+    SAFE_MEMSET(import_key->data, import_key->datalen, 0, import_key->datalen);
+    SAFE_FREE(import_key);
+    return ret;
+}
+
 
 sgx_status_t enclave_get_parameters_for_import(ehsm_keyblob_t *cmk, size_t cmk_size,
                                                ehsm_keyspec_t keyspec,

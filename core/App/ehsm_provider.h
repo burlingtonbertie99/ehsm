@@ -69,6 +69,10 @@ typedef enum
     EH_GEN_TOKEN_HMAC,
     EH_IMPORT_KEY_MATERIAL,
     EH_GET_PARAMETERS_FOR_IMPORT
+    ,
+        EH_EXPORT_KEY_MATERIAL,
+        EH_GET_PARAMETERS_FOR_EXPORT
+
 } ehsm_action_t;
 
 extern "C"
@@ -156,6 +160,59 @@ pubkey -- the data of the asymmetric public key
 */
 ehsm_status_t GetPublicKey(ehsm_keyblob_t *cmk,
                            ehsm_data_t *pubkey);
+
+
+
+
+
+
+
+
+
+
+
+/*
+Description:
+Decrypt user's key and store in ehsm db
+Input:
+cmk -- An external cmk,
+encryptedimportkeymarital -- encrypted user's key,
+Output:
+cmk -- An external cmk
+*/
+ehsm_status_t ExportKeyMaterial(ehsm_keyblob_t *cmk,
+                                ehsm_padding_mode_t padding_mode
+                                //,ehsm_data_t *encryptedexportkeymaterial
+
+                                );
+
+/*
+Description:
+Generate RSA keypair and store in external key temporarily
+RSA public key will be return for user
+Input:
+import_cmk -- A symmetric external cmk,
+keyspec -- asymmetric keyspec
+*/
+ehsm_status_t GetParametersForExport(ehsm_keyblob_t *import_cmk,
+                                     ehsm_keyspec_t keyspec,
+                                     ehsm_data_t *pubkey);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
 Description:

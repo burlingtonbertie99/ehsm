@@ -88,6 +88,8 @@ const ehsm_action_t = {
     [KMS_ACTION.common.GenTokenHmac]: 18,
     [KMS_ACTION.cryptographic.ImportKeyMaterial]: 19,
     [KMS_ACTION.cryptographic.GetParametersForImport]: 20,
+    [KMS_ACTION.cryptographic.ExportKeyMaterial]: 21,
+    [KMS_ACTION.cryptographic.GetParametersForExport]: 22,
 }
 
 const kms_config = {

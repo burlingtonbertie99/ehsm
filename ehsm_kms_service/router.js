@@ -167,6 +167,118 @@ const router = async (p) => {
         napi_res && res.send(napi_res)
       } catch (error) { }
       break
+      
+    case KMS_ACTION.cryptographic.GetParametersForExport:
+      try {
+        let { keyid, keyspec } = payload
+        let timestamp = new Date().getTime()
+        keyspec = ehsm_keySpec_t[keyspec]
+        const cmk_base64 = await find_cmk_by_keyid(appid, keyid, res, DB)
+        const importToken = { keyid, timestamp }
+        const importToken_str = JSON.stringify(importToken)
+        const napi_res = napi_result(action, res, { cmk: cmk_base64, keyspec })
+        const { hmac } = gen_token_hmac(napi_res.result.sessionkey, importToken_str)
+        const query = {
+          selector: {
+            _id: `cmk:${keyid}`,
+            creator: appid,
+          },
+          fields: [
+            '_id',
+            '_rev',
+            'keyid',
+            'keyBlob',
+            'creator',
+            'creationDate',
+            'expireTime',
+            'alias',
+            'keyspec',
+            'origin',
+            'keyState',
+            'sessionkeyBlob',
+            'token_expired_time',
+          ],
+          limit: 1,
+        }
+        let cmks_res = await DB.partitionedFind('cmk', query)
+        cmks_res.docs[0].token_expired_time = timestamp * 1 + Definition.IMPORT_TOKEN_EFFECTIVE_DURATION
+        cmks_res.docs[0].keyBlob = napi_res.result.cmk
+        cmks_res.docs[0].sessionkeyBlob = napi_res.result.sessionkey
+        await DB.insert(cmks_res.docs[0])
+        delete napi_res.result.cmk // Delete cmk in NaPi result
+        delete napi_res.result.sessionkey
+        // ImportToken format : keyid(16B) + timestamp(microsecond) + hmac(32B)
+        napi_res.result.importToken = base64_encode(JSON.stringify({ keyid, timestamp, hmac }))
+        napi_res && res.send(napi_res)
+      } catch (error) {
+        logger.error(error)
+        res.send(_result(500, 'GetParametersForImport failed.'))
+      }
+      break
+      
+      
+    case KMS_ACTION.cryptographic.ExportKeyMaterial:
+      try {
+        let { keyid, padding_mode, importToken } = payload
+        const timestamp_now = new Date().getTime()
+        const { keyid: keyid_token, timestamp, hmac: signature } = await JSON.parse(base64_decode(importToken))
+        padding_mode = ehsm_padding_mode_t[padding_mode]
+        const query = {
+          selector: {
+            _id: `cmk:${keyid}`,
+            creator: appid,
+          },
+          fields: [
+            '_id',
+            '_rev',
+            'keyid',
+            'keyBlob',
+            'creator',
+            'creationDate',
+            'expireTime',
+            'alias',
+            'keyspec',
+            'origin',
+            'keyState',
+            'sessionkeyBlob',
+          ],
+          limit: 1,
+        }
+        let query_result = await DB.partitionedFind('cmk', query)
+        const { sessionkeyBlob } = query_result.docs[0]
+        // TODO do we need a token????????????
+        if (timestamp_now * 1 > timestamp * 1 + Definition.IMPORT_TOKEN_EFFECTIVE_DURATION) {
+          query_result.docs[0].sessionkeyBlob = ''
+          res.send(_result(500, 'Token validity time is 24 hours. Try to send "GetParametersForImport" request again.'))
+          break
+        }
+        const cmk_base64 = await find_cmk_by_keyid(appid, keyid, res, DB)
+        const token_payload = { keyid_token, timestamp }
+        const token_payload_str = JSON.stringify(token_payload)
+        const { hmac } = gen_token_hmac(sessionkeyBlob, token_payload_str)
+        if (!consttime_equal_compare(hmac, signature) || !consttime_equal_compare(keyid_token, keyid)) {
+          res.send(_result(500, 'ImportToken failed.'))
+          break
+        }
+        const napi_res = napi_result(action, res, { cmk: cmk_base64, padding_mode })
+        if (napi_res.result.cmk) {
+          query_result.docs[0].keyBlob = napi_res.result.cmk
+          if (napi_res) {
+            query_result.docs[0].sessionkeyBlob = ''
+          }
+          await DB.insert(query_result.docs[0])
+          delete napi_res.result.cmk // Delete cmk in NaPi result
+          napi_res.result.result = true
+        } else {
+          napi_res.result.result = false
+        }
+        napi_res && res.send(napi_res)
+      } catch (error) {
+        logger.error(error)
+        res.send(_result(500, 'ImportKeyMaterial failed.'))
+      }
+      break  
+      
     case KMS_ACTION.cryptographic.GetParametersForImport:
       try {
         let { keyid, keyspec } = payload
