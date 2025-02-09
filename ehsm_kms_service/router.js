@@ -174,10 +174,10 @@ const router = async (p) => {
         let timestamp = new Date().getTime()
         keyspec = ehsm_keySpec_t[keyspec]
         const cmk_base64 = await find_cmk_by_keyid(appid, keyid, res, DB)
-        const importToken = { keyid, timestamp }
-        const importToken_str = JSON.stringify(importToken)
+        const exportToken = { keyid, timestamp }
+        const exportToken_str = JSON.stringify(exportToken)
         const napi_res = napi_result(action, res, { cmk: cmk_base64, keyspec })
-        const { hmac } = gen_token_hmac(napi_res.result.sessionkey, importToken_str)
+        const { hmac } = gen_token_hmac(napi_res.result.sessionkey, exportToken_str)
         const query = {
           selector: {
             _id: `cmk:${keyid}`,
@@ -219,9 +219,9 @@ const router = async (p) => {
       
     case KMS_ACTION.cryptographic.ExportKeyMaterial:
       try {
-        let { keyid, padding_mode, importToken } = payload
+        let { keyid, padding_mode, exportToken } = payload
         const timestamp_now = new Date().getTime()
-        const { keyid: keyid_token, timestamp, hmac: signature } = await JSON.parse(base64_decode(importToken))
+        const { keyid: keyid_token, timestamp, hmac: signature } = await JSON.parse(base64_decode(exportToken))
         padding_mode = ehsm_padding_mode_t[padding_mode]
         const query = {
           selector: {
