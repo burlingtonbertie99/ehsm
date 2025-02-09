@@ -420,11 +420,11 @@ extern "C"
 
         ehsm_padding_mode_t padding_mode = (ehsm_padding_mode_t)payloadJson.readData_uint32("padding_mode");
 
-        ret = ImportKeyMaterial(cmk, padding_mode, key_material);
+        ret = ExportKeyMaterial(cmk, padding_mode, key_material);
         if (ret != EH_OK)
         {
             retJsonObj.setCode(retJsonObj.CODE_FAILED);
-            retJsonObj.setMessage("Import key failed.");
+            retJsonObj.setMessage("Export key failed.");
             goto out;
         }
 
@@ -512,7 +512,7 @@ extern "C"
         cmk->keybloblen = cmk_tmp.keybloblen;
         cmk->metadata = cmk_tmp.metadata;
 
-        ret = GetParametersForImport(cmk, keyspec, pubkey);
+        ret = GetParametersForExport(cmk, keyspec, pubkey);
         if (ret != EH_OK)
         {
             retJsonObj.setCode(retJsonObj.CODE_FAILED);

@@ -1,33 +1,3 @@
-/*
- * Copyright (C) 2020-2021 Intel Corporation
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   1. Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in
- *      the documentation and/or other materials provided with the
- *      distribution.
- *   3. Neither the name of Intel Corporation nor the names of its
- *      contributors may be used to endorse or promote products derived
- *      from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- */
 #include <uuid/uuid.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -299,17 +269,17 @@ uint32_t EHSM_FFI_CALL(const char *reqJson, char *respJson)
     case EH_GEN_TOKEN_HMAC:
         ffi_generateTokenHmac(payloadJson, respJson);
         break;
-        case EH_IMPORT_KEY_MATERIAL:
+    case EH_IMPORT_KEY_MATERIAL:
             ffi_importKeyMaterial(payloadJson, respJson);
         break;
-        case EH_GET_PARAMETERS_FOR_IMPORT:
+    case EH_GET_PARAMETERS_FOR_IMPORT:
             ffi_getParametersForImport(payloadJson, respJson);
         break;
-        case EH_EXPORT_KEY_MATERIAL:
-            ffi_importKeyMaterial(payloadJson, respJson);
+    case EH_EXPORT_KEY_MATERIAL:
+            ffi_exportKeyMaterial(payloadJson, respJson);
         break;
-        case EH_GET_PARAMETERS_FOR_EXPORT:
-            ffi_getParametersForImport(payloadJson, respJson);
+    case EH_GET_PARAMETERS_FOR_EXPORT:
+            ffi_getParametersForExport(payloadJson, respJson);
         break;
     default:
         RetJsonObj retJsonObj;
@@ -526,6 +496,46 @@ ehsm_status_t GetPublicKey(ehsm_keyblob_t *cmk,
 
 
 
+ehsm_status_t ExportKeyMaterial(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding_mode, ehsm_data_t *key_material)
+{
+    sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+    /* only support to directly encrypt data of less than 6 KB */
+    if (!validate_params(cmk, EH_CMK_MAX_SIZE) ||
+        !validate_params(key_material, EH_CIPHERTEXT_MAX_SIZE))
+        return EH_ARGUMENTS_BAD;
+    ret = enclave_import_key_material(g_enclave_id,
+                                      &sgxStatus,
+                                      cmk,
+                                      APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen),
+                                      padding_mode,
+                                      key_material,
+                                      APPEND_SIZE_TO_DATA_T(key_material->datalen));
+    if (ret != SGX_SUCCESS || sgxStatus != SGX_SUCCESS)
+        return EH_FUNCTION_FAILED;
+    else
+        return EH_OK;
+}
+ehsm_status_t GetParametersForExport(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec, ehsm_data_t *pubkey)
+{
+    sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+    if (!validate_params(cmk, EH_CMK_MAX_SIZE))
+        return EH_ARGUMENTS_BAD;
+    if (pubkey == NULL)
+        return EH_ARGUMENTS_BAD;
+    ret = enclave_get_parameters_for_import(g_enclave_id,
+                                            &sgxStatus,
+                                            cmk,
+                                            APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen),
+                                            keyspec,
+                                            pubkey,
+                                            APPEND_SIZE_TO_DATA_T(pubkey->datalen));
+    if (ret != SGX_SUCCESS || sgxStatus != SGX_SUCCESS)
+        return EH_FUNCTION_FAILED;
+    else
+        return EH_OK;
+}
 
 
 
@@ -534,7 +544,7 @@ ehsm_status_t GetPublicKey(ehsm_keyblob_t *cmk,
 
 
 
-ehsm_status_t ExportKeyMaterial(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding_mode)
+ehsm_status_t ExportKeyMaterialXXX(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding_mode)
 {
     sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
@@ -564,7 +574,7 @@ ehsm_status_t ExportKeyMaterial(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding
         return EH_OK;
 }
 
-ehsm_status_t GetParametersForExport(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec, ehsm_data_t *pubkey)
+ehsm_status_t GetParametersForExportXXX(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec, ehsm_data_t *pubkey)
 {
     sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;

@@ -182,7 +182,7 @@ cmk -- An external cmk
 */
 ehsm_status_t ExportKeyMaterial(ehsm_keyblob_t *cmk,
                                 ehsm_padding_mode_t padding_mode
-                                //,ehsm_data_t *encryptedexportkeymaterial
+                                ,ehsm_data_t *encryptedexportkeymaterial
 
                                 );
 
