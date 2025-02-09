@@ -208,7 +208,7 @@ const router = async (p) => {
         delete napi_res.result.cmk // Delete cmk in NaPi result
         delete napi_res.result.sessionkey
         // ImportToken format : keyid(16B) + timestamp(microsecond) + hmac(32B)
-        napi_res.result.importToken = base64_encode(JSON.stringify({ keyid, timestamp, hmac }))
+        napi_res.result.exportToken = base64_encode(JSON.stringify({ keyid, timestamp, hmac }))
         napi_res && res.send(napi_res)
       } catch (error) {
         logger.error(error)
