@@ -237,14 +237,41 @@ def test_BYOK(
     )
     assert_response_success(result.response)
     keyid = result.keyid
+
+
+
+
+
+
+
+
+
+
     # 2. get parameters for import
     result = client.get_parameters_for_import(keyid=keyid, keyspec=cryptoKeyspec)
     assert_response_success(result.response)
     pubkey = result.pubkey
     importToken = result.importToken
+
+
+
+
+
+
+
+
+
+
+
     # 3. encrypt import key
     aes_key = generate_random_key_hex(importKeyspec)
+
     key_material = rsa_encrypt(aes_key, pubkey, padding_mode)
+
+
+
+
+
     # 4. import key material
     result = client.import_key_material(
         keyid=keyid,
@@ -252,10 +279,20 @@ def test_BYOK(
         padding_mode=padding_mode,
         importToken=importToken,
     )
+    # assert_response_success(result.response)
+    # assert result.result
+
+    exportToken = importToken
+
+    result = client.export_key_material(
+        keyid=keyid,
+        key_material=key_material.decode("utf-8"),
+        padding_mode=padding_mode,
+        exportToken=exportToken,
+
+    )
     assert_response_success(result.response)
     assert result.result
-
-
 
 
 @pytest.mark.parametrize(
