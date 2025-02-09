@@ -219,7 +219,7 @@ const router = async (p) => {
       
     case KMS_ACTION.cryptographic.ExportKeyMaterial:
       try {
-        let { keyid, padding_mode, exportToken } = payload
+        let { keyid, padding_mode, key_material, exportToken } = payload
         const timestamp_now = new Date().getTime()
         const { keyid: keyid_token, timestamp, hmac: signature } = await JSON.parse(base64_decode(exportToken))
         padding_mode = ehsm_padding_mode_t[padding_mode]
@@ -260,7 +260,7 @@ const router = async (p) => {
           res.send(_result(500, 'ExportToken failed.'))
           break
         }
-        const napi_res = napi_result(action, res, { cmk: cmk_base64, padding_mode })
+        const napi_res = napi_result(action, res, { cmk: cmk_base64, padding_mode,key_material })
         if (napi_res.result.cmk) {
           query_result.docs[0].keyBlob = napi_res.result.cmk
           if (napi_res) {
@@ -326,6 +326,9 @@ const router = async (p) => {
         res.send(_result(500, 'GetParametersForImport failed.'))
       }
       break
+
+
+
     case KMS_ACTION.cryptographic.ImportKeyMaterial:
       try {
         let { keyid, padding_mode, key_material, importToken } = payload
@@ -386,6 +389,9 @@ const router = async (p) => {
         res.send(_result(500, 'ImportKeyMaterial failed.'))
       }
       break
+
+
+
     case KMS_ACTION.cryptographic.GenerateDataKey:
       try {
         const { keyid, keylen, aad = '' } = payload
