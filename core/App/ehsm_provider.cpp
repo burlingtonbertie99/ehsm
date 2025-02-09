@@ -544,7 +544,7 @@ ehsm_status_t GetParametersForExport(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec
 
 
 
-ehsm_status_t ExportKeyMaterialXXX(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding_mode)
+ehsm_status_t ExportKeyMaterialXXX(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding_mode,ehsm_data_t *key_material)
 {
     sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
@@ -563,8 +563,8 @@ ehsm_status_t ExportKeyMaterialXXX(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padd
                                       cmk,
                                       APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen),
                                       padding_mode
-                                     // ,key_material,
-                                      //APPEND_SIZE_TO_DATA_T(key_material->datalen)
+                                      ,key_material,
+                                      APPEND_SIZE_TO_DATA_T(key_material->datalen)
 
                                       );
 
