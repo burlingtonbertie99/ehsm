@@ -193,9 +193,14 @@ def test_generate_data_key_without_plaintext(client: Client, keyspec: KeySpec):
     client.decrypt(aad=aad, keyid=keyid, ciphertext=ciphertext)
 
 
+
+exportKeyspec_values = [
+    KeySpec.EH_AES_GCM_128
+]
+
 importKeyspec_values = [
     KeySpec.EH_AES_GCM_128,
-   # KeySpec.EH_AES_GCM_192,
+    # KeySpec.EH_AES_GCM_192,
    # KeySpec.EH_AES_GCM_256,
    # KeySpec.EH_SM4_CBC,
    # KeySpec.EH_SM4_CTR,
@@ -246,6 +251,48 @@ def test_BYOK(
         key_material=key_material.decode("utf-8"),
         padding_mode=padding_mode,
         importToken=importToken,
+    )
+    assert_response_success(result.response)
+    assert result.result
+
+
+
+
+@pytest.mark.parametrize(
+    "exportKeyspec, cryptoKeyspec, padding_mode",
+    [
+        (exportKeyspec, cryptoKeyspec, padding_mode)
+        for exportKeyspec in exportKeyspec_values
+        for cryptoKeyspec in cryptoKeyspec_values
+        for padding_mode in padding_mode_values
+    ],
+)
+def test_BYOKEXPORT(
+    client: Client,
+    cryptoKeyspec: KeySpec,
+    exportKeyspec: KeySpec,
+    padding_mode: PaddingMode,
+):
+    # 1. create data key
+    result = client.create_key(
+        exportKeyspec, Origin.EH_EXTERNAL_KEY, KeyUsage.EH_KEYUSAGE_ENCRYPT_DECRYPT
+    )
+    assert_response_success(result.response)
+    keyid = result.keyid
+    # 2. get parameters for import
+    result = client.get_parameters_for_export(keyid=keyid, keyspec=cryptoKeyspec)
+    assert_response_success(result.response)
+    pubkey = result.pubkey
+    exportToken = result.exportToken
+    # 3. encrypt import key
+    aes_key = generate_random_key_hex(exportKeyspec)
+    key_material = rsa_encrypt(aes_key, pubkey, padding_mode)
+    # 4. import key material
+    result = client.export_key_material(
+        keyid=keyid,
+        key_material=key_material.decode("utf-8"),
+        padding_mode=padding_mode,
+        exportToken=exportToken,
     )
     assert_response_success(result.response)
     assert result.result

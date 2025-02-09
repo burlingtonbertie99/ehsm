@@ -163,13 +163,13 @@ const cryptographic_params = {
   [KMS_ACTION.cryptographic.ExportKeyMaterial]: {
     keyid,
     padding_mode
-    //,
-    //key_material: {
-      //type: PARAM_DATA_TYPE.BASE64,
-      //maxLength: MAX_LENGTH * 4 / 3,  // This is the length after base64 encoding.
-      //minLength: 1,
-      //required: true,
-    //},
+    ,
+    key_material: {
+      type: PARAM_DATA_TYPE.BASE64,
+      maxLength: MAX_LENGTH * 4 / 3,  // This is the length after base64 encoding.
+      minLength: 1,
+      required: true,
+    },
   },
   
   [KMS_ACTION.cryptographic.GetParametersForImport]: {

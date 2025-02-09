@@ -212,7 +212,7 @@ const router = async (p) => {
         napi_res && res.send(napi_res)
       } catch (error) {
         logger.error(error)
-        res.send(_result(500, 'GetParametersForImport failed.'))
+        res.send(_result(500, 'GetParametersForExport failed.'))
       }
       break
       
@@ -249,7 +249,7 @@ const router = async (p) => {
         // TODO do we need a token????????????
         if (timestamp_now * 1 > timestamp * 1 + Definition.IMPORT_TOKEN_EFFECTIVE_DURATION) {
           query_result.docs[0].sessionkeyBlob = ''
-          res.send(_result(500, 'Token validity time is 24 hours. Try to send "GetParametersForImport" request again.'))
+          res.send(_result(500, 'Token validity time is 24 hours. Try to send "GetParametersForExport" request again.'))
           break
         }
         const cmk_base64 = await find_cmk_by_keyid(appid, keyid, res, DB)
@@ -257,7 +257,7 @@ const router = async (p) => {
         const token_payload_str = JSON.stringify(token_payload)
         const { hmac } = gen_token_hmac(sessionkeyBlob, token_payload_str)
         if (!consttime_equal_compare(hmac, signature) || !consttime_equal_compare(keyid_token, keyid)) {
-          res.send(_result(500, 'ImportToken failed.'))
+          res.send(_result(500, 'ExportToken failed.'))
           break
         }
         const napi_res = napi_result(action, res, { cmk: cmk_base64, padding_mode })
@@ -275,7 +275,7 @@ const router = async (p) => {
         napi_res && res.send(napi_res)
       } catch (error) {
         logger.error(error)
-        res.send(_result(500, 'ImportKeyMaterial failed.'))
+        res.send(_result(500, 'ExportKeyMaterial failed.'))
       }
       break  
       

@@ -163,4 +163,32 @@ class CryptoMixin(EHSMBaseClient):
                 "keyspec": keyspec,
             },
         )
-        return GetParamtersForImportResponse.from_response(resp)
+        return GetParametersForImportResponse.from_response(resp)
+
+
+    def get_parameters_for_export(self, keyid: str, keyspec: KeySpec):
+        resp = self._session.post(
+            "",
+            params={"Action": "GetParametersForExport"},
+            data={
+                "keyid": keyid,
+                "keyspec": keyspec,
+            },
+        )
+        return GetParametersForExportResponse.from_response(resp)
+
+
+    def export_key_material(
+        self, keyid: str, key_material: str, padding_mode: PaddingMode, exportToken: str
+    ):
+        resp = self._session.post(
+            "",
+            params={"Action": "ExportKeyMaterial"},
+            data={
+                "keyid": keyid,
+                "key_material": key_material,
+                "padding_mode": padding_mode,
+                "exportToken": exportToken,
+            },
+        )
+        return ExportKeyMaterialResponse.from_response(resp)
