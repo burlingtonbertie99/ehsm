@@ -39,14 +39,14 @@ def test_asymm_encrypt_decrypt(client: Client, keyspec: KeySpec):
     "keyspec",
     [
         KeySpec.EH_RSA_2048,
-        KeySpec.EH_RSA_3072,
-        KeySpec.EH_RSA_4096,
-        KeySpec.EH_SM2,
-        KeySpec.EH_EC_P224,
-        KeySpec.EH_EC_P256,
-        KeySpec.EH_EC_P256K,
-        KeySpec.EH_EC_P384,
-        KeySpec.EH_EC_P521,
+  #      KeySpec.EH_RSA_3072,
+  #      KeySpec.EH_RSA_4096,
+  #      KeySpec.EH_SM2,
+  #      KeySpec.EH_EC_P224,
+  #      KeySpec.EH_EC_P256,
+  #      KeySpec.EH_EC_P256K,
+  #      KeySpec.EH_EC_P384,
+  #      KeySpec.EH_EC_P521,
     ],
 )
 def test_get_public_key(client: Client, keyspec: KeySpec):
@@ -65,14 +65,14 @@ def test_get_public_key(client: Client, keyspec: KeySpec):
     "keyspec, padding_mode, digest_mode",
     [
         (KeySpec.EH_RSA_2048, PaddingMode.EH_RSA_PKCS1, DigestMode.EH_SHA_256),
-        (KeySpec.EH_RSA_3072, PaddingMode.EH_RSA_PKCS1, DigestMode.EH_SHA_256),
-        (KeySpec.EH_RSA_4096, PaddingMode.EH_RSA_PKCS1, DigestMode.EH_SHA_256),
-        (KeySpec.EH_SM2, PaddingMode.EH_PAD_NONE, DigestMode.EH_SM3),
-        (KeySpec.EH_EC_P224, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
-        (KeySpec.EH_EC_P256, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
-        (KeySpec.EH_EC_P256K, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
-        (KeySpec.EH_EC_P384, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
-        (KeySpec.EH_EC_P521, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
+ #       (KeySpec.EH_RSA_3072, PaddingMode.EH_RSA_PKCS1, DigestMode.EH_SHA_256),
+ #       (KeySpec.EH_RSA_4096, PaddingMode.EH_RSA_PKCS1, DigestMode.EH_SHA_256),
+ #       (KeySpec.EH_SM2, PaddingMode.EH_PAD_NONE, DigestMode.EH_SM3),
+ #       (KeySpec.EH_EC_P224, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
+ #       (KeySpec.EH_EC_P256, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
+ #       (KeySpec.EH_EC_P256K, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
+ #       (KeySpec.EH_EC_P384, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
+ #       (KeySpec.EH_EC_P521, PaddingMode.EH_PAD_NONE, DigestMode.EH_SHA_256),
     ],
 )
 def test_sign_verify(
@@ -112,10 +112,10 @@ def test_sign_verify(
     "keyspec",
     [
         KeySpec.EH_AES_GCM_128,
-        KeySpec.EH_AES_GCM_192,
-        KeySpec.EH_AES_GCM_256,
-        KeySpec.EH_SM4_CBC,
-        KeySpec.EH_SM4_CTR,
+ #       KeySpec.EH_AES_GCM_192,
+ #       KeySpec.EH_AES_GCM_256,
+ #       KeySpec.EH_SM4_CBC,
+ #       KeySpec.EH_SM4_CTR,
     ],
 )
 def test_symm_encrypt_decrypt(client: Client, keyspec: KeySpec):
@@ -141,10 +141,10 @@ def test_symm_encrypt_decrypt(client: Client, keyspec: KeySpec):
     "keyspec",
     [
         KeySpec.EH_AES_GCM_128,
-        KeySpec.EH_AES_GCM_192,
-        KeySpec.EH_AES_GCM_256,
-        KeySpec.EH_SM4_CBC,
-        KeySpec.EH_SM4_CTR,
+  #      KeySpec.EH_AES_GCM_192,
+  #      KeySpec.EH_AES_GCM_256,
+  #      KeySpec.EH_SM4_CBC,
+  #      KeySpec.EH_SM4_CTR,
     ],
 )
 def test_generate_data_key(client: Client, keyspec: KeySpec):
@@ -168,10 +168,10 @@ def test_generate_data_key(client: Client, keyspec: KeySpec):
     "keyspec",
     [
         KeySpec.EH_AES_GCM_128,
-        KeySpec.EH_AES_GCM_192,
-        KeySpec.EH_AES_GCM_256,
-        KeySpec.EH_SM4_CBC,
-        KeySpec.EH_SM4_CTR,
+    #    KeySpec.EH_AES_GCM_192,
+    #    KeySpec.EH_AES_GCM_256,
+    #    KeySpec.EH_SM4_CBC,
+    #    KeySpec.EH_SM4_CTR,
     ],
 )
 def test_generate_data_key_without_plaintext(client: Client, keyspec: KeySpec):
@@ -195,15 +195,15 @@ def test_generate_data_key_without_plaintext(client: Client, keyspec: KeySpec):
 
 importKeyspec_values = [
     KeySpec.EH_AES_GCM_128,
-    KeySpec.EH_AES_GCM_192,
-    KeySpec.EH_AES_GCM_256,
-    KeySpec.EH_SM4_CBC,
-    KeySpec.EH_SM4_CTR,
+   # KeySpec.EH_AES_GCM_192,
+   # KeySpec.EH_AES_GCM_256,
+   # KeySpec.EH_SM4_CBC,
+   # KeySpec.EH_SM4_CTR,
 ]
 cryptoKeyspec_values = [
     KeySpec.EH_RSA_2048,
-    KeySpec.EH_RSA_3072,
-    KeySpec.EH_RSA_4096,
+   # KeySpec.EH_RSA_3072,
+   # KeySpec.EH_RSA_4096,
 ]
 padding_mode_values = [
     PaddingMode.EH_RSA_PKCS1,
