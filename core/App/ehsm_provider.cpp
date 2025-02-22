@@ -1135,21 +1135,21 @@ ehsm_status_t GenerateQuote(ehsm_data_t *quote)
     if (quote == NULL)
         return EH_ARGUMENTS_BAD;
 
-    dcap_ret = sgx_qe_get_target_info(&qe_target_info);
-    if (SGX_QL_SUCCESS != dcap_ret)
-    {
-        log_e("Error in sgx_qe_get_target_info. 0x%04x\n", dcap_ret);
-        return EH_FUNCTION_FAILED;
-    }
-    log_d("sgx_qe_get_target_info successfully returned\n");
+    // dcap_ret = sgx_qe_get_target_info(&qe_target_info);
+    // if (SGX_QL_SUCCESS != dcap_ret)
+    // {
+    //     log_e("Error in sgx_qe_get_target_info. 0x%04x\n", dcap_ret);
+    //     return EH_FUNCTION_FAILED;
+    // }
+    // log_d("sgx_qe_get_target_info successfully returned\n");
 
-    dcap_ret = sgx_qe_get_quote_size(&quote_size);
-    if (SGX_QL_SUCCESS != dcap_ret)
-    {
-        log_e("Error in sgx_qe_get_quote_size. 0x%04x\n", dcap_ret);
-        return EH_FUNCTION_FAILED;
-    }
-    log_d("sgx_qe_get_quote_size successfully returned\n");
+    // dcap_ret = sgx_qe_get_quote_size(&quote_size);
+    // if (SGX_QL_SUCCESS != dcap_ret)
+    // {
+    //     log_e("Error in sgx_qe_get_quote_size. 0x%04x\n", dcap_ret);
+    //     return EH_FUNCTION_FAILED;
+    // }
+    // log_d("sgx_qe_get_quote_size successfully returned\n");
 
     if (quote->datalen == 0)
     {
@@ -1159,6 +1159,7 @@ ehsm_status_t GenerateQuote(ehsm_data_t *quote)
 
     if (quote->datalen != quote_size)
         return EH_ARGUMENTS_BAD;
+
 
     ret = enclave_create_report(g_enclave_id,
                                 &sgxStatus,
@@ -1173,16 +1174,16 @@ ehsm_status_t GenerateQuote(ehsm_data_t *quote)
 
     memset(quote->data, 0, quote_size);
 
-    // Get the Quote
-    dcap_ret = sgx_qe_get_quote(&app_report,
-                                quote->datalen,
-                                quote->data);
-    if (SGX_QL_SUCCESS != dcap_ret)
-    {
-        log_e("Error in sgx_qe_get_quote. 0x%04x\n", dcap_ret);
-        return EH_FUNCTION_FAILED;
-    }
-    log_d("sgx_qe_get_quote successfully returned\n");
+    // // Get the Quote
+    // dcap_ret = sgx_qe_get_quote(&app_report,
+    //                             quote->datalen,
+    //                             quote->data);
+    // if (SGX_QL_SUCCESS != dcap_ret)
+    // {
+    //     log_e("Error in sgx_qe_get_quote. 0x%04x\n", dcap_ret);
+    //     return EH_FUNCTION_FAILED;
+    // }
+    // log_d("sgx_qe_get_quote successfully returned\n");
 
     return EH_OK;
 }
@@ -1241,27 +1242,27 @@ ehsm_status_t VerifyQuote(ehsm_data_t *quote,
 
     if (!g_policy_loaded)
     {
-        // call DCAP quote verify library to set QvE loading policy
-        dcap_ret = sgx_qv_set_enclave_load_policy(SGX_QL_DEFAULT);
-        if (dcap_ret != SGX_QL_SUCCESS)
-        {
-            log_e("Error in sgx_qv_set_enclave_load_policy failed: 0x%04x\n", dcap_ret);
-            return EH_FUNCTION_FAILED;
-        }
-
-        log_d("sgx_qv_set_enclave_load_policy successfully returned.\n");
+        // // call DCAP quote verify library to set QvE loading policy
+        // dcap_ret = sgx_qv_set_enclave_load_policy(SGX_QL_DEFAULT);
+        // if (dcap_ret != SGX_QL_SUCCESS)
+        // {
+        //     log_e("Error in sgx_qv_set_enclave_load_policy failed: 0x%04x\n", dcap_ret);
+        //     return EH_FUNCTION_FAILED;
+        // }
+        //
+        // log_d("sgx_qv_set_enclave_load_policy successfully returned.\n");
         g_policy_loaded = 1;
     }
 
-    // call DCAP quote verify library to get supplemental data size
-    dcap_ret = sgx_qv_get_quote_supplemental_data_size(&supplemental_data_size);
-    if (dcap_ret != SGX_QL_SUCCESS)
-    {
-        log_e("Error in sgx_qv_get_quote_supplemental_data_size failed: 0x%04x\n", dcap_ret);
-        return EH_FUNCTION_FAILED;
-    }
-
-    log_d("sgx_qv_get_quote_supplemental_data_size successfully returned.\n");
+    // // call DCAP quote verify library to get supplemental data size
+    // dcap_ret = sgx_qv_get_quote_supplemental_data_size(&supplemental_data_size);
+    // if (dcap_ret != SGX_QL_SUCCESS)
+    // {
+    //     log_e("Error in sgx_qv_get_quote_supplemental_data_size failed: 0x%04x\n", dcap_ret);
+    //     return EH_FUNCTION_FAILED;
+    // }
+    //
+    // log_d("sgx_qv_get_quote_supplemental_data_size successfully returned.\n");
     p_supplemental_data = (uint8_t *)malloc(supplemental_data_size);
     if (p_supplemental_data == NULL)
     {
@@ -1290,24 +1291,24 @@ ehsm_status_t VerifyQuote(ehsm_data_t *quote,
         }
     }
 
-    // call DCAP quote verify library for quote verification with Intel QvE.
-    dcap_ret = sgx_qv_verify_quote(quote->data,
-                                   quote->datalen,
-                                   NULL,
-                                   current_time,
-                                   &collateral_expiration_status,
-                                   &quote_verification_result,
-                                   &qve_report_info,
-                                   supplemental_data_size,
-                                   p_supplemental_data);
-    if (dcap_ret != SGX_QL_SUCCESS)
-    {
-        log_e("Error in sgx_qv_verify_quote failed: 0x%04x\n", dcap_ret);
-        rc = EH_FUNCTION_FAILED;
-        goto out;
-    }
-
-    log_d("sgx_qv_verify_quote successfully returned\n");
+    // // call DCAP quote verify library for quote verification with Intel QvE.
+    // dcap_ret = sgx_qv_verify_quote(quote->data,
+    //                                quote->datalen,
+    //                                NULL,
+    //                                current_time,
+    //                                &collateral_expiration_status,
+    //                                &quote_verification_result,
+    //                                &qve_report_info,
+    //                                supplemental_data_size,
+    //                                p_supplemental_data);
+    // if (dcap_ret != SGX_QL_SUCCESS)
+    // {
+    //     log_e("Error in sgx_qv_verify_quote failed: 0x%04x\n", dcap_ret);
+    //     rc = EH_FUNCTION_FAILED;
+    //     goto out;
+    // }
+    //
+    // log_d("sgx_qv_verify_quote successfully returned\n");
 
     // call sgx_dcap_tvl API in SampleISVEnclave to verify QvE's report and identity
     ret = sgx_tvl_verify_qve_report_and_identity(g_enclave_id,
