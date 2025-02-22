@@ -14,7 +14,7 @@
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <option name="SCRIPT_NAME" value="ehsm" />
-    <option name="PARAMETERS" value="--url https://10.180.1.17:9002/ehsm --insecure server-test --enroll" />
+    <option name="PARAMETERS" value="--url https://10.180.1.105:9002/ehsm --insecure server-test --enroll" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />
