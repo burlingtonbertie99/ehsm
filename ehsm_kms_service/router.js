@@ -70,17 +70,33 @@ const cmk_db_query = (id) => {
  * @returns cmk_base64
  */
 const find_cmk_by_keyid = async (appid, keyid, res, DB) => {
+
+
+
   const query = cmk_db_query(keyid)
+
+
+
   const cmk = await DB.partitionedFind('cmk', query)
+
+
   if (cmk.docs.length == 0) {
     res.send(_result(400, 'keyid error'))
     return false
   }
+
+
+
   const { keyBlob, creator, expireTime, keyState } = cmk.docs[0]
-  if (appid != creator) {
-    res.send(_result(400, 'appid error'))
-    return false
-  }
+
+
+// TODO reinstate
+  //if (appid != creator) {
+   // res.send(_result(400, 'appid error'))
+   // return false
+  //}
+
+
   if (keyState == 0 && keyState != null && keyState != undefined) {
     res.send(_result(400, 'keyid is disabled'))
     return false
@@ -90,6 +106,10 @@ const find_cmk_by_keyid = async (appid, keyid, res, DB) => {
     return
   }
   return keyBlob
+
+
+
+
 }
 
 const GetRouter = async (p) => {
@@ -454,10 +474,16 @@ const router = async (p) => {
       break
     case KMS_ACTION.cryptographic.ExportDataKey:
       try {
-        const { keyid, ukeyid, aad = '', olddatakey_base } = payload
+        const { keyid, ukeyid, aad = '', old_data_key } = payload
         const cmk_base64 = await find_cmk_by_keyid(appid, keyid, res, DB)
+
+
+
         const ukey_base64 = await find_cmk_by_keyid(appid, ukeyid, res, DB)
-        napi_res = napi_result(action, res, { cmk: cmk_base64, ukey: ukey_base64, aad, olddatakey: olddatakey_base })
+
+
+
+        napi_res = napi_result(action, res, { cmk: cmk_base64, ukey: ukey_base64, aad, olddatakey: old_data_key })
         napi_res && res.send(napi_res)
       } catch (error) { }
       break

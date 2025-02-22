@@ -209,7 +209,8 @@ const cryptographic_params = {
       required: true,
     },
     aad,
-    olddatakey_base: {
+  //  olddatakey_base: {
+    old_data_key: {
       type: PARAM_DATA_TYPE.STRING,
       minLength: 1,
       maxLength: MAX_LENGTH * 4 / 3,  // This is the length after base64 encoding.
