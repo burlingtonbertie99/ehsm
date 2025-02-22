@@ -516,6 +516,13 @@ ehsm_status_t ExportKeyMaterial(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding
     else
         return EH_OK;
 }
+
+
+
+
+
+
+
 ehsm_status_t GetParametersForExport(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec, ehsm_data_t *pubkey)
 {
     sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
@@ -524,7 +531,7 @@ ehsm_status_t GetParametersForExport(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec
         return EH_ARGUMENTS_BAD;
     if (pubkey == NULL)
         return EH_ARGUMENTS_BAD;
-    ret = enclave_get_parameters_for_import(g_enclave_id,
+    ret = enclave_get_parameters_for_export(g_enclave_id,
                                             &sgxStatus,
                                             cmk,
                                             APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen),
@@ -536,6 +543,11 @@ ehsm_status_t GetParametersForExport(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec
     else
         return EH_OK;
 }
+
+
+
+
+
 
 
 
@@ -573,6 +585,19 @@ ehsm_status_t ExportKeyMaterialXXX(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padd
     else
         return EH_OK;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ehsm_status_t GetParametersForExportXXX(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec, ehsm_data_t *pubkey)
 {

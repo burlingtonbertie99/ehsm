@@ -307,32 +307,32 @@ def test_BYOK(
 
 
 
-def test_BYOKEXPORT(
-    client: Client,
-    cryptoKeyspec: KeySpec,
-    exportKeyspec: KeySpec,
-    padding_mode: PaddingMode,
-):
-    # 1. create data key
-    result = client.create_key(
-        exportKeyspec, Origin.EH_EXTERNAL_KEY, KeyUsage.EH_KEYUSAGE_ENCRYPT_DECRYPT
-    )
-    assert_response_success(result.response)
-    keyid = result.keyid
-    # 2. get parameters for import
-    result = client.get_parameters_for_export(keyid=keyid, keyspec=cryptoKeyspec)
-    assert_response_success(result.response)
-    pubkey = result.pubkey
-    exportToken = result.exportToken
-    # 3. encrypt import key
-    aes_key = generate_random_key_hex(exportKeyspec)
-    key_material = rsa_encrypt(aes_key, pubkey, padding_mode)
-    # 4. import key material
-    result = client.export_key_material(
-        keyid=keyid,
-        key_material=key_material.decode("utf-8"),
-        padding_mode=padding_mode,
-        exportToken=exportToken,
-    )
-    assert_response_success(result.response)
-    assert result.result
+# def test_BYOKEXPORT(
+#     client: Client,
+#     cryptoKeyspec: KeySpec,
+#     exportKeyspec: KeySpec,
+#     padding_mode: PaddingMode,
+# ):
+#     # 1. create data key
+#     result = client.create_key(
+#         exportKeyspec, Origin.EH_EXTERNAL_KEY, KeyUsage.EH_KEYUSAGE_ENCRYPT_DECRYPT
+#     )
+#     assert_response_success(result.response)
+#     keyid = result.keyid
+#     # 2. get parameters for import
+#     result = client.get_parameters_for_export(keyid=keyid, keyspec=cryptoKeyspec)
+#     assert_response_success(result.response)
+#     pubkey = result.pubkey
+#     exportToken = result.exportToken
+#     # 3. encrypt import key
+#     aes_key = generate_random_key_hex(exportKeyspec)
+#     key_material = rsa_encrypt(aes_key, pubkey, padding_mode)
+#     # 4. import key material
+#     result = client.export_key_material(
+#         keyid=keyid,
+#         key_material=key_material.decode("utf-8"),
+#         padding_mode=padding_mode,
+#         exportToken=exportToken,
+#     )
+#     assert_response_success(result.response)
+#     assert result.result

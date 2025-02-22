@@ -302,8 +302,17 @@ sgx_status_t enclave_get_parameters_for_export(ehsm_keyblob_t *cmk, size_t cmk_s
 sgx_status_t enclave_export_key_material(ehsm_keyblob_t *cmk, size_t cmk_size,
                                          ehsm_padding_mode_t padding_mode,
                                          ehsm_data_t *key_material, size_t key_material_size)
+
 {
+
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+
+
+    //get cmk, encrypt with ("external") public key
+
+
+
+
 
     if (cmk == NULL ||
         cmk_size != APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen) ||
@@ -334,6 +343,18 @@ sgx_status_t enclave_export_key_material(ehsm_keyblob_t *cmk, size_t cmk_size,
         goto out;
 
     memset_s(cmk->keyblob, cmk->keybloblen, 0, cmk->keybloblen);
+
+
+
+
+
+
+
+
+
+
+
+    
 
     ret = ehsm_create_keyblob(import_key->data,
                               import_key->datalen,

@@ -395,6 +395,27 @@ extern "C"
 
 
 
+    /**
+     * @brief Decrypt user's key and store as an external key.
+     *
+     * @param payload : Pass in the key parameter in the form of JSON string
+                {
+                    cmk : a base64 string,
+                    padding_mode : int,
+                    exportToken : a base64 string,
+                    key_material : a base64 string,
+                }
+     *
+     * @return char*
+     * [string] json string
+        {
+            code: int,
+            message: string,
+            result: {
+                cmk : a base64 string representation of the encrypted key
+            }
+        }
+     */
 
 
 
@@ -477,7 +498,7 @@ extern "C"
 
         memcpy_s(&cmk_tmp, sizeof(ehsm_keyblob_t), cmk, sizeof(ehsm_keyblob_t));
 
-        ret = GetParametersForImport(&cmk_tmp, keyspec, &pubkey_tmp);
+        ret = GetParametersForExport(&cmk_tmp, keyspec, &pubkey_tmp);
         if (ret != EH_OK)
         {
             retJsonObj.setCode(retJsonObj.CODE_FAILED);
