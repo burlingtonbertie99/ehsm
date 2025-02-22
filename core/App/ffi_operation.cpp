@@ -477,7 +477,7 @@ extern "C"
 
         memcpy_s(&cmk_tmp, sizeof(ehsm_keyblob_t), cmk, sizeof(ehsm_keyblob_t));
 
-        ret = GetParametersForImport(&cmk_tmp, keyspec, &pubkey_tmp);
+        ret = GetParametersForExport(&cmk_tmp, keyspec, &pubkey_tmp);
         if (ret != EH_OK)
         {
             retJsonObj.setCode(retJsonObj.CODE_FAILED);

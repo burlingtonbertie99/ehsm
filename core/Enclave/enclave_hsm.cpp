@@ -317,6 +317,13 @@ sgx_status_t enclave_export_key_material(ehsm_keyblob_t *cmk, size_t cmk_size,
     ehsm_data_t import_key_tmp = {0};
 
     ret = ehsm_rsa_decrypt(cmk, padding_mode, key_material, &import_key_tmp);
+
+
+    // encrypt the cmk plain text with the public key
+  //  ret = ehsm_rsa_encrypt(cmk, padding_mode, key_material, &import_key_tmp);
+
+
+
     if (ret != SGX_SUCCESS)
     {
         return ret;
