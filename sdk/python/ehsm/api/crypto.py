@@ -154,6 +154,40 @@ class CryptoMixin(EHSMBaseClient):
         )
         return ImportKeyMaterialResponse.from_response(resp)
 
+
+
+
+
+
+    def import_public(
+        self, keyid: str, key_material: str, padding_mode: PaddingMode, importToken: str
+    ):
+        resp = self._session.post(
+            "",
+            params={"Action": "ImportPublic"},
+            data={
+                "keyid": keyid,
+                "key_material": key_material,
+                "padding_mode": padding_mode,
+                "importToken": importToken,
+            },
+        )
+        return ImportPublicResponse.from_response(resp)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def get_parameters_for_import(self, keyid: str, keyspec: KeySpec):
         resp = self._session.post(
             "",

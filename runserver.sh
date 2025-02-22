@@ -34,5 +34,6 @@ if [ ! -d  "node_modules" ]; then
     npm install
 fi
 
-sudo node ./ehsm_kms_server.js run_mode=$EHSM_RUN_MODE port=$EHSM_KMS_PORT
+#sudo 
+node ./ehsm_kms_server.js run_mode=$EHSM_RUN_MODE port=$EHSM_KMS_PORT
 

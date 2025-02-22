@@ -64,6 +64,13 @@ class ImportKeyMaterialResponse(EHSMBase):
    result: bool
 
 
+
+
+@dataclass
+class ImportPublicResponse(EHSMBase):
+   result: bool
+
+
 @dataclass
 class GetParametersForImportResponse(EHSMBase):
     pubkey: str

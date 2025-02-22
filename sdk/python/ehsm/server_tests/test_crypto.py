@@ -372,3 +372,51 @@ def test_generate_data_key_without_plaintext_and_export(client: Client, keyspec:
 
 
 
+
+
+
+@pytest.mark.parametrize(
+    "importKeyspec, cryptoKeyspec, padding_mode",
+    [
+        (importKeyspec, cryptoKeyspec, padding_mode)
+        for importKeyspec in importKeyspec_values
+        for cryptoKeyspec in cryptoKeyspec_values
+        for padding_mode in padding_mode_values
+    ],
+)
+def test_ImportPublic(
+    client: Client,
+    cryptoKeyspec: KeySpec,
+    importKeyspec: KeySpec,
+    padding_mode: PaddingMode,
+):
+    # 1. create data key
+    result = client.create_key(
+        importKeyspec, Origin.EH_EXTERNAL_KEY, KeyUsage.EH_KEYUSAGE_ENCRYPT_DECRYPT
+    )
+    assert_response_success(result.response)
+    keyid = result.keyid
+
+    # 2. get parameters for import
+    result = client.get_parameters_for_import(keyid=keyid, keyspec=cryptoKeyspec)
+    assert_response_success(result.response)
+    pubkey = result.pubkey
+    importToken = result.importToken
+
+    # 3. encrypt import key
+    aes_key = generate_random_key_hex(importKeyspec)
+
+    key_material = rsa_encrypt(aes_key, pubkey, padding_mode)
+
+    # 4. import key material
+    result = client.import_public(
+        keyid=keyid,
+        key_material=key_material.decode("utf-8"),
+        padding_mode=padding_mode,
+        importToken=importToken,
+    )
+    assert_response_success(result.response)
+    assert result.result
+
+
+

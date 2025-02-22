@@ -269,9 +269,16 @@ uint32_t EHSM_FFI_CALL(const char *reqJson, char *respJson)
     case EH_GEN_TOKEN_HMAC:
         ffi_generateTokenHmac(payloadJson, respJson);
         break;
-    case EH_IMPORT_KEY_MATERIAL:
+        case EH_IMPORT_KEY_MATERIAL:
             ffi_importKeyMaterial(payloadJson, respJson);
         break;
+
+
+        case EH_IMPORT_PUBLIC:
+            ffi_importPublic(payloadJson, respJson);
+        break;
+
+        
     case EH_GET_PARAMETERS_FOR_IMPORT:
             ffi_getParametersForImport(payloadJson, respJson);
         break;
@@ -284,7 +291,7 @@ uint32_t EHSM_FFI_CALL(const char *reqJson, char *respJson)
     default:
         RetJsonObj retJsonObj;
         retJsonObj.setCode(retJsonObj.CODE_FAILED);
-        retJsonObj.setMessage("action not find.");
+        retJsonObj.setMessage("action not found.");
         retJsonObj.toChar(respJson);
         break;
     }
