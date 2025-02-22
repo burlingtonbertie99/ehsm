@@ -330,3 +330,45 @@ def test_generate_data_key(client: Client, keyspec: KeySpec):
 #     )
 #     assert_response_success(result.response)
 #     assert result.result
+
+
+@pytest.mark.parametrize(
+    "keyspec",
+    [
+        KeySpec.EH_AES_GCM_128,
+        #    KeySpec.EH_AES_GCM_192,
+        #    KeySpec.EH_AES_GCM_256,
+        #    KeySpec.EH_SM4_CBC,
+        #    KeySpec.EH_SM4_CTR,
+    ],
+)
+def test_generate_data_key_without_plaintext_and_export(client: Client, keyspec: KeySpec):
+    KEYLEN = 48
+    aad = str_to_base64(random_str(10))
+    # 1. create data key
+    result = client.create_key(
+        keyspec, Origin.EH_INTERNAL_KEY, KeyUsage.EH_KEYUSAGE_ENCRYPT_DECRYPT
+    )
+    assert_response_success(result.response)
+    keyid = result.keyid
+    # 2. test creation of data key
+    result = client.generate_data_key_without_plaintext(
+        aad=aad, keyid=keyid, keylen=KEYLEN
+    )
+    assert_response_success(result.response)
+    ciphertext = result.ciphertext
+    # 3. test decryption
+    client.decrypt(aad=aad, keyid=keyid, ciphertext=ciphertext)
+
+    # . Export key
+    res = client.export_data_key(aad=aad, keyid=keyid, old_data_key=ciphertext, ukeyid="12b022e0-3ae9-4260-97ab-099778dcc873",
+                           padding_mode=PaddingMode.EH_RSA_PKCS1)
+#    print("***************************************************************")
+
+
+
+#    print(res.newdatakey)
+#    print("***************************************************************")
+
+
+
