@@ -178,6 +178,59 @@ const router = async (p) => {
         res.send(_result(500, 'Server internal error, please contact the administrator.'))
       }
       break
+
+
+
+    case KMS_ACTION.cryptographic.GetParametersForImport:
+      try {
+        let { keyid, keyspec } = payload
+        let timestamp = new Date().getTime()
+        keyspec = ehsm_keySpec_t[keyspec]
+        const cmk_base64 = await find_cmk_by_keyid(appid, keyid, res, DB)
+        const importToken = { keyid, timestamp }
+        const importToken_str = JSON.stringify(importToken)
+        const napi_res = napi_result(action, res, { cmk: cmk_base64, keyspec })
+        const { hmac } = gen_token_hmac(napi_res.result.sessionkey, importToken_str)
+        const query = {
+          selector: {
+            _id: `cmk:${keyid}`,
+            creator: appid,
+          },
+          fields: [
+            '_id',
+            '_rev',
+            'keyid',
+            'keyBlob',
+            'creator',
+            'creationDate',
+            'expireTime',
+            'alias',
+            'keyspec',
+            'origin',
+            'keyState',
+            'sessionkeyBlob',
+            'token_expired_time',
+          ],
+          limit: 1,
+        }
+        let cmks_res = await DB.partitionedFind('cmk', query)
+        cmks_res.docs[0].token_expired_time = timestamp * 1 + Definition.IMPORT_TOKEN_EFFECTIVE_DURATION
+        cmks_res.docs[0].keyBlob = napi_res.result.cmk
+        cmks_res.docs[0].sessionkeyBlob = napi_res.result.sessionkey
+        await DB.insert(cmks_res.docs[0])
+        delete napi_res.result.cmk // Delete cmk in NaPi result
+        delete napi_res.result.sessionkey
+        // ImportToken format : keyid(16B) + timestamp(microsecond) + hmac(32B)
+        napi_res.result.importToken = base64_encode(JSON.stringify({ keyid, timestamp, hmac }))
+        napi_res && res.send(napi_res)
+      } catch (error) {
+        logger.error(error)
+        res.send(_result(500, 'GetParametersForImport failed.'))
+      }
+      break
+
+
+
     case KMS_ACTION.cryptographic.GetPublicKey:
       try {
         const { keyid } = payload
@@ -298,9 +351,6 @@ const router = async (p) => {
         res.send(_result(500, 'ExportKeyMaterial failed.'))
       }
       break
-
-
-
 
 
     case KMS_ACTION.cryptographic.ImportPublic:
@@ -486,54 +536,6 @@ const router = async (p) => {
 
 
 
-      
-    case KMS_ACTION.cryptographic.GetParametersForImport:
-      try {
-        let { keyid, keyspec } = payload
-        let timestamp = new Date().getTime()
-        keyspec = ehsm_keySpec_t[keyspec]
-        const cmk_base64 = await find_cmk_by_keyid(appid, keyid, res, DB)
-        const importToken = { keyid, timestamp }
-        const importToken_str = JSON.stringify(importToken)
-        const napi_res = napi_result(action, res, { cmk: cmk_base64, keyspec })
-        const { hmac } = gen_token_hmac(napi_res.result.sessionkey, importToken_str)
-        const query = {
-          selector: {
-            _id: `cmk:${keyid}`,
-            creator: appid,
-          },
-          fields: [
-            '_id',
-            '_rev',
-            'keyid',
-            'keyBlob',
-            'creator',
-            'creationDate',
-            'expireTime',
-            'alias',
-            'keyspec',
-            'origin',
-            'keyState',
-            'sessionkeyBlob',
-            'token_expired_time',
-          ],
-          limit: 1,
-        }
-        let cmks_res = await DB.partitionedFind('cmk', query)
-        cmks_res.docs[0].token_expired_time = timestamp * 1 + Definition.IMPORT_TOKEN_EFFECTIVE_DURATION
-        cmks_res.docs[0].keyBlob = napi_res.result.cmk
-        cmks_res.docs[0].sessionkeyBlob = napi_res.result.sessionkey
-        await DB.insert(cmks_res.docs[0])
-        delete napi_res.result.cmk // Delete cmk in NaPi result
-        delete napi_res.result.sessionkey
-        // ImportToken format : keyid(16B) + timestamp(microsecond) + hmac(32B)
-        napi_res.result.importToken = base64_encode(JSON.stringify({ keyid, timestamp, hmac }))
-        napi_res && res.send(napi_res)
-      } catch (error) {
-        logger.error(error)
-        res.send(_result(500, 'GetParametersForImport failed.'))
-      }
-      break
 
 
 

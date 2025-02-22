@@ -173,12 +173,14 @@ sgx_status_t enclave_get_domain_key_from_local()
     uint8_t dk_cipher[dk_cipher_len] = {0};
     uint8_t tmp[SGX_DOMAIN_KEY_SIZE] = {0};
 
-    ret = ocall_read_domain_key(&retstatus, dk_cipher, dk_cipher_len);
-    if (ret != SGX_SUCCESS)
-    {
-        log_e("failed read domain key\n");
-        return ret;
-    }
+    // ret = ocall_read_domain_key(&retstatus, dk_cipher, dk_cipher_len);
+    // if (ret != SGX_SUCCESS)
+    // {
+    //     log_e("failed read domain key\n");
+    //     return ret;
+    // }
+
+    retstatus = -2;
 
     if (retstatus == 0)
     {
@@ -209,7 +211,7 @@ sgx_status_t enclave_get_domain_key_from_local()
         ret = ocall_store_domain_key(&retstatus, dk_cipher, dk_cipher_len);
         if (ret != SGX_SUCCESS || retstatus != 0)
             return SGX_ERROR_UNEXPECTED;
-        log_i("create a new domain key and store it to disk.\n");
+        log_i("created a new domain key and stored it to disk.\n");
     }
     else
         return SGX_ERROR_UNEXPECTED;
