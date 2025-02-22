@@ -496,6 +496,97 @@ ehsm_status_t GetPublicKey(ehsm_keyblob_t *cmk,
 
 
 
+
+
+
+
+
+
+
+ehsm_status_t ImportPublic(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding_mode, ehsm_data_t *key_material)
+
+
+{
+
+
+    sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
+
+
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+
+
+
+
+
+    /* only support to directly encrypt data of less than 6 KB */
+
+
+    if (!validate_params(cmk, EH_CMK_MAX_SIZE) ||
+
+
+        !validate_params(key_material, EH_CIPHERTEXT_MAX_SIZE))
+
+
+        return EH_ARGUMENTS_BAD;
+
+
+
+
+
+    ret = enclave_import_key_material(g_enclave_id,
+
+
+                                      &sgxStatus,
+
+
+                                      cmk,
+
+
+                                      APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen),
+
+
+                                      padding_mode,
+
+
+                                      key_material,
+
+
+                                      APPEND_SIZE_TO_DATA_T(key_material->datalen));
+
+
+
+
+
+    if (ret != SGX_SUCCESS || sgxStatus != SGX_SUCCESS)
+
+
+        return EH_FUNCTION_FAILED;
+
+
+    else
+
+
+        return EH_OK;
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ehsm_status_t ExportKeyMaterial(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding_mode, ehsm_data_t *key_material)
 {
     sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
@@ -524,7 +615,7 @@ ehsm_status_t GetParametersForExport(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec
         return EH_ARGUMENTS_BAD;
     if (pubkey == NULL)
         return EH_ARGUMENTS_BAD;
-    ret = enclave_get_parameters_for_import(g_enclave_id,
+    ret = enclave_get_parameters_for_export(g_enclave_id,
                                             &sgxStatus,
                                             cmk,
                                             APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen),

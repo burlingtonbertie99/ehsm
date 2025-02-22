@@ -77,6 +77,68 @@ extern "C"
      */
     uint32_t ffi_createKey(JsonObj payloadJson, char *respJson);
 
+
+
+
+    /**
+
+
+     * @brief Decrypt user's key and store as an external key.
+
+
+     *
+
+
+     * @param payload : Pass in the key parameter in the form of JSON string
+
+
+                {
+
+
+                    cmk : a base64 string,
+
+
+                    padding_mode : int,
+
+
+                    importToken : a base64 string,
+
+
+                    key_material : a base64 string,
+
+
+                }
+
+
+     *
+
+
+     * @return char*
+
+
+     * [string] json string
+
+
+        {
+
+
+            code: int,
+
+
+            message: string,
+
+
+            result: {}
+
+
+        }
+
+
+     */
+
+
+    uint32_t ffi_importPublic(JsonObj payloadJson, char *respJson);
+
     /**
      * @brief Get public key from asymmetric keypair
      *

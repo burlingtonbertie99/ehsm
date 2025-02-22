@@ -693,7 +693,7 @@ ehsm-core enclave will decrypt user-supplied ciphertextblob with specified CMK t
   *(return to the [Cryptographic Functionalities APIs](#eHSM-REST-API-Reference).)*
 
 ## GetParametersForExport
-Queries the parameters that are used to import key material for a customer master key (CMK).
+Queries the parameters that are used to export key material for a customer master key (CMK).
 
 **Usage notes**
 
@@ -749,9 +749,153 @@ Queries the parameters that are used to import key material for a customer maste
   *(return to the [Cryptographic Functionalities APIs](#eHSM-REST-API-Reference).)*
 ---
 
-## ExportKeyMaterial
+
+
+
+## ImportPublic
+
+
+
+
 
 Call the ImportKeyMaterial operation to import the key material.
+
+
+
+
+
+Call CreateKey when creating a CMK, you can select its key material source as external. Origin set to EXTERNAL. This API is used to import the key material into the CMK.
+
+
+
+
+
+- **Request Payload:**
+
+
+
+
+
+| Name | Type | Reference Value | Description |
+
+
+|:-----------|:-----------|:-----------|:-----------|
+
+
+| keyid | String | "aac3e45a-d3dc-4791-89b6-4ada0e38e6ef" | The unique keyid of import CMK. |
+
+
+| ImportToken | String | Base64String | The token that is used to import key material.<br/>The token is valid for 24 hours. The value of this parameter is required when you call the ImportKeyMaterial operation. |
+
+
+| key_material | String |  -----BEGIN PUBLIC KEY-----<br/>MIIBigKCAYEA1Kk+8GOwtm161+Mdk3woyaCl1NoxaSfPQlFg0NCN5rArDC1vgTWY<br/>3LPu5OR8pJ1i/uc9sAYbCOEQ20/J/ulZjTBaWpLkXhpZ+X0NQCAcoShdG2v2F/w7<br/>igGyOoOIA5HiR/Sa8Ee4sdOqLDDr6wG4GDeQplGGwVOhhTxxyGA5vauxS8KxTZlE<br/>2SU6BRB0KYTe7aJR8GW7pcR0D8IZ3EWHimlJqlbdIziVW0oRjgVg49jzJ0n4IqEQ<br/>n0bs+5360hus9AYcSteJOiomTW3c1yUWFSItQt15s+336R384F4VmLN+P4mvIZ1U<br/>5cG13kzZpGEUPBWEAOOAUxwUyRLZAEN/rA255tpAg4AERalriteNxHpZxemxrDPh<br/>kuZ6jK5sUGfervkKBYK8HJXmsmqsTyctemzZbCnOxYSjOJ+oQ9RVQVr/+vtylvid<br/>HXOr7Q4rihFeEFQhbX0R4xBlWGOgbeW9l3kfVa5BmE4Ff9ZFtt9MrrtXOBUMEma5<br/>w0xCDVaiSMjPAgMBAAE=<br/>-----END PUBLIC KEY-----<br/> | The encrypted symmetric key. |
+
+
+| padding_mode | String | EH_PAD_RSA_PKCS1 | The padding mode that is used to encrypt key material. |
+
+
+| KeyMaterialExpireUnix | String | 0 | The time when the key material expires.<br/>If this parameter is not specified or set this parameter to 0, the key material does not expire.|
+
+
+
+
+
+- **Response Data:**
+
+
+
+
+
+| Name | Type | Reference Value | Description |
+
+
+|:-----------|:-----------|:-----------|:-----------|
+
+
+| code | int | 200 | The result of the method call, 200 is success, others are fail. |
+
+
+| message | String | "success" | The description of result. |
+
+
+
+
+
+- **Example**
+
+
+    - Request sample in python
+
+
+  ```python
+
+
+    payload = OrderedDict()
+
+
+    payload["keyid"] = keyid
+
+
+    payload["key_material"] = key_material
+
+
+    payload["padding_mode"] = padding_mode
+
+
+    params = _utils_.init_params(payload)
+
+
+
+
+
+    sign_string = urllib.parse.unquote_plus(urllib.parse.urlencode(params))
+
+
+    sign = str(base64.b64encode(hmac.new(appkey.encode('utf-8'), sign_string.encode('utf-8'), digestmod=sha256).digest()),'utf-8').upper()
+
+
+
+
+
+    requests.post(url="<ehsm_srv_address>/ehsm?Action=ImportKeyMaterial", data=json.dumps(params), headers=headers)
+
+
+
+
+
+  ```
+
+
+  	- Response data
+
+
+  ```python
+
+
+    Response= {
+
+
+      "code": 200,
+
+
+      "message": "success!"
+
+
+    }
+
+
+  ```
+
+
+*(return to the [Cryptographic Functionalities APIs](#eHSM-REST-API-Reference).)*
+
+
+---
+
+
+## ExportKeyMaterial
+
+Call the ExportKeyMaterial operation to export the key material.
 
 Call CreateKey when creating a CMK, you can select its key material source as external. Origin set to EXTERNAL. This API is used to import the key material into the CMK.
 

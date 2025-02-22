@@ -86,7 +86,13 @@ enclave {
 
 
 
+  public sgx_status_t enclave_import_public([in, out, size=cmk_size] ehsm_keyblob_t* cmk, size_t cmk_size,
 
+
+                                                        ehsm_padding_mode_t padding_mode,
+
+
+                                                        [in, size=key_material_size] ehsm_data_t *key_material, size_t key_material_size);
 
 
 

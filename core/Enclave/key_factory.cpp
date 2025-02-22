@@ -362,7 +362,7 @@ out:
 
 
 
-sgx_status_t ehsm_import_rsa_key_for_BYOKexport(ehsm_keyblob_t *cmk, ehsm_data_t *pubkey, ehsm_keyspec_t keyspec)
+sgx_status_t ehsm_import_rsa_key_for_BYOK_export(ehsm_keyblob_t *cmk, ehsm_data_t *pubkey, ehsm_keyspec_t keyspec)
 {
     // 1. generate a RSA keypair
     // 2. return pubkey length

@@ -395,6 +395,199 @@ extern "C"
 
 
 
+
+
+    /**
+
+
+       * @brief Decrypt user's key and store as an external key.
+
+
+       *
+
+
+       * @param payload : Pass in the key parameter in the form of JSON string
+
+
+                  {
+
+
+                      cmk : a base64 string,
+
+
+                      padding_mode : int,
+
+
+                      importToken : a base64 string,
+
+
+                      key_material : a base64 string,
+
+
+                  }
+
+
+       *
+
+
+       * @return char*
+
+
+       * [string] json string
+
+
+          {
+
+
+              code: int,
+
+
+              message: string,
+
+
+              result: {
+
+
+                  cmk : a base64 string
+
+
+              }
+
+
+          }
+
+
+       */
+
+
+    uint32_t ffi_importPublic(JsonObj payloadJson, char *respJson)
+
+
+    {
+
+
+        RetJsonObj retJsonObj;
+
+
+        JsonObj tokenJsonObj;
+
+
+
+
+
+        ehsm_keyblob_t *cmk = NULL;
+
+
+        ehsm_status_t ret = EH_OK;
+
+
+        ehsm_data_t *key_material = NULL;
+
+
+
+
+
+        JSON2STRUCT(payloadJson, cmk);
+
+
+
+
+
+        string key_material_str_base64 = payloadJson.readData_string("key_material");
+
+
+        string key_material_str = base64_decode(key_material_str_base64);
+
+
+
+
+
+        key_material = (ehsm_data_t *)malloc(APPEND_SIZE_TO_DATA_T(key_material_str.length()));
+
+
+        key_material->datalen = key_material_str.length();
+
+
+        memcpy_s(key_material->data, key_material->datalen, key_material_str.c_str(), key_material->datalen);
+
+
+
+
+
+        ehsm_padding_mode_t padding_mode = (ehsm_padding_mode_t)payloadJson.readData_uint32("padding_mode");
+
+
+
+
+
+        ret = ImportPublic(cmk, padding_mode, key_material);
+
+
+        if (ret != EH_OK)
+
+
+        {
+
+
+            retJsonObj.setCode(retJsonObj.CODE_FAILED);
+
+
+            retJsonObj.setMessage("Import key failed.");
+
+
+            goto out;
+
+
+        }
+
+
+
+
+
+        STRUCT2JSON(retJsonObj, cmk);
+
+
+
+
+
+        out:
+
+
+            SAFE_FREE(cmk);
+
+
+        SAFE_FREE(key_material);
+
+
+        retJsonObj.toChar(respJson);
+
+
+        return ret;
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * @brief Decrypt user's key and store as an external key.
      *

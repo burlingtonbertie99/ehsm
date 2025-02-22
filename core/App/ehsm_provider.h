@@ -133,6 +133,41 @@ Note: the CMK will be wrapped by the DK(DomainKey)
 */
 ehsm_status_t CreateKey(ehsm_keyblob_t *cmk);
 
+
+
+
+
+
+
+/*
+
+
+Description:
+
+
+Output:
+
+
+cmk -- An external cmk
+
+
+*/
+
+
+ehsm_status_t ImportPublic(ehsm_keyblob_t *cmk,
+
+
+                                ehsm_padding_mode_t padding_mode,
+
+
+                                ehsm_data_t *encryptedimportkeymarital);
+
+
+
+
+
+
+
 /*
 Description:
 Encrypt an arbitrary set of bytes using the CMK.(only support symmetric types)
