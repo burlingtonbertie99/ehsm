@@ -294,7 +294,7 @@ sgx_status_t enclave_get_parameters_for_export(ehsm_keyblob_t *cmk, size_t cmk_s
         return ret;
     }
 
-    ret = ehsm_create_rsa_key_for_BYOK_export(cmk, pubkey, keyspec);
+    ret = ehsm_import_rsa_key_for_BYOK_export(cmk, pubkey, keyspec);
 
     return ret;
 }
