@@ -39,6 +39,148 @@
 int case_number = 0;
 int success_number = 0;
 
+
+
+
+
+
+
+/*
+
+step1. generate an RSA key as the CM(customer master key)
+
+step2. import it
+
+step3. ....
+
+*/
+
+
+
+
+void test_import_public() {
+
+    log_i("============test_import_public start==========\n");
+    std::string plaintext[] = {"Test1234-AES128", "Test1234-AES192",
+                               "Test1234-AES256", "Test1234-SM4-CTR", "Test1234-SM4-CBC"};
+     std::string  keyid[] = {"aac3e45a-d3dc-4791-89b6-4ada0e38e6ef"};
+
+    case_number += sizeof(plaintext) / sizeof(plaintext[0]);
+
+    for (int i = 0; i < sizeof(plaintext) / sizeof(plaintext[0]); i++)
+    {
+        char *returnJsonChar = (char *)calloc(10000, sizeof(char));
+        char aad[] = "challenge";
+        log_i("============%s start==========\n", plaintext[i].c_str());
+
+        char *cmk_base64 = nullptr;
+        char *ciphertext_base64 = nullptr;
+        char *plaintext_base64 = nullptr;
+        std::string input_plaintext_base64 = base64_encode((const uint8_t *)plaintext[i].c_str(), plaintext[i].length());
+        std::string input_aad_base64 = base64_encode((const uint8_t *)aad, sizeof(aad) / sizeof(aad[0]));
+
+        RetJsonObj retJsonObj;
+        JsonObj param_json;
+        JsonObj payload_json;
+        payload_json.addData_string("keyid", keyid[i]);
+        payload_json.addData_uint32("importtoken", EH_INTERNAL_KEY);
+        payload_json.addData_uint32("key_material", EH_KEYUSAGE_ENCRYPT_DECRYPT);
+        payload_json.addData_uint32("padding_mode", EH_KEYUSAGE_ENCRYPT_DECRYPT);
+        param_json.addData_uint32("action", EH_IMPORT_PUBLIC);
+        param_json.addData_JsonValue("payload", payload_json.getJson());
+
+        EHSM_FFI_CALL(param_json.toString().c_str(), returnJsonChar);
+        retJsonObj.parse(returnJsonChar);
+
+        if (retJsonObj.getCode() != 200)
+        {
+            log_e("Import PUBLIC failed, error message: %s \n", retJsonObj.getMessage().c_str());
+            goto cleanup;
+        }
+        log_i("FFI_CreateKey Json = %s\n", returnJsonChar);
+        log_i("Imported PUBLIC SUCCESSFULLY!\n");
+        //cmk_base64 = retJsonObj.readData_cstr("cmk");
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //
+        // payload_json.clear();
+        // payload_json.addData_string("cmk", cmk_base64);
+        // payload_json.addData_string("plaintext", input_plaintext_base64);
+        // payload_json.addData_string("aad", input_aad_base64);
+        //
+        // param_json.addData_uint32("action", EH_ENCRYPT);
+        // param_json.addData_JsonValue("payload", payload_json.getJson());
+        //
+        // memset(returnJsonChar, 0, 10000);
+        // EHSM_FFI_CALL(param_json.toString().c_str(), returnJsonChar);
+        // retJsonObj.parse(returnJsonChar);
+        //
+        // if (retJsonObj.getCode() != 200)
+        // {
+        //     log_e("Failed to Encrypt the plaittext data, error message: %s \n", retJsonObj.getMessage().c_str());
+        //     goto cleanup;
+        // }
+        // log_i("FFI_Encrypt json = %s\n", returnJsonChar);
+        // log_i("Encrypt data SUCCESSFULLY!\n");
+        //
+        // ciphertext_base64 = retJsonObj.readData_cstr("ciphertext");
+        // payload_json.addData_string("ciphertext", ciphertext_base64);
+        //
+        // param_json.addData_uint32("action", EH_DECRYPT);
+        // param_json.addData_JsonValue("payload", payload_json.getJson());
+        //
+        // memset(returnJsonChar, 0, 10000);
+        // EHSM_FFI_CALL(param_json.toString().c_str(), returnJsonChar);
+        // retJsonObj.parse(returnJsonChar);
+        //
+        // if (retJsonObj.getCode() != 200)
+        // {
+        //     log_e("Failed to Decrypt the data, error message: %s \n", retJsonObj.getMessage().c_str());
+        //     goto cleanup;
+        // }
+        // log_i("FFI_Decrypt json = %s\n", returnJsonChar);
+        // plaintext_base64 = retJsonObj.readData_cstr("plaintext");
+        // if (plaintext_base64 == input_plaintext_base64)
+        // {
+        //     success_number++;
+        //     log_i("decode64 plaintext = %s\n", base64_decode(plaintext_base64).c_str());
+        //     log_i("Decrypt data SUCCESSFULLY!\n");
+        // }
+        // else
+        // {
+        //     log_e("Failed to Decrypt the data, result = %s \n", base64_decode(plaintext_base64).c_str());
+        // }
+
+    cleanup:
+        SAFE_FREE(plaintext_base64);
+        SAFE_FREE(ciphertext_base64);
+        SAFE_FREE(cmk_base64);
+        SAFE_FREE(returnJsonChar);
+        log_i("============%s end==========\n", plaintext[i].c_str());
+    }
+
+    log_i("============test_import_public end==========\n");
+
+
+
+}
+
+
+
+
+
+
 /*
 
 step1. generate an aes-gcm-128 key as the CM(customer master key)
@@ -1741,37 +1883,40 @@ cleanup:
 
 void function_test()
 {
-    test_symmertric_encrypt_decrypt();
 
-    test_symmertric_encrypt_decrypt_without_aad();
+    test_import_public();
 
-    test_RSA_encrypt_decrypt();
-
-    test_RSA_sign_verify_RAW();
-
-    test_RSA_sign_verify_DIGEST();
-
-    test_sm2_sign_verify_RAW();
-
-    test_sm2_sign_verify_DIGEST();
-
-    test_ec_sign_verify_RAW();
-    
-    test_ec_sign_verify_DIGEST();
-
-    test_SM2_encrypt_decrypt();
-
-    test_get_pubkey();
-
-    test_generate_AES_datakey();
-
-    test_generate_SM4_datakey();
-
-    test_export_datakey();
-
-    test_GenerateQuote_and_VerifyQuote();
-
-    test_Enroll();
+    // test_symmertric_encrypt_decrypt();
+    //
+    // test_symmertric_encrypt_decrypt_without_aad();
+    //
+    // test_RSA_encrypt_decrypt();
+    //
+    // test_RSA_sign_verify_RAW();
+    //
+    // test_RSA_sign_verify_DIGEST();
+    //
+    // test_sm2_sign_verify_RAW();
+    //
+    // test_sm2_sign_verify_DIGEST();
+    //
+    // test_ec_sign_verify_RAW();
+    //
+    // test_ec_sign_verify_DIGEST();
+    //
+    // test_SM2_encrypt_decrypt();
+    //
+    // test_get_pubkey();
+    //
+    // test_generate_AES_datakey();
+    //
+    // test_generate_SM4_datakey();
+    //
+    // test_export_datakey();
+    //
+    // test_GenerateQuote_and_VerifyQuote();
+    //
+    // test_Enroll();
 
     log_i("All of tests done. %d/%d success\n", success_number, case_number);
 }

@@ -80,7 +80,7 @@ typedef enum
         EH_EXPORT_KEY_MATERIAL,
         EH_GET_PARAMETERS_FOR_EXPORT,
     EH_IMPORT_PUBLIC
-    
+
 
 } ehsm_action_t;
 
