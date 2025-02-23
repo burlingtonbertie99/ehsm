@@ -90,7 +90,7 @@ const ehsm_action_t = {
     [KMS_ACTION.cryptographic.GetParametersForImport]: 20,
     [KMS_ACTION.cryptographic.ExportKeyMaterial]: 21,
     [KMS_ACTION.cryptographic.GetParametersForExport]: 22,
-    [KMS_ACTION.cryptographic.ImportPublic]: 23,
+    [KMS_ACTION.cryptographic.ImportPublic]: 23
 }
 
 const kms_config = {

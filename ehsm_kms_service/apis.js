@@ -11,10 +11,10 @@ const cryptographic = {
   ExportDataKey: 'ExportDataKey',
   GetPublicKey: 'GetPublicKey',
   ImportKeyMaterial: 'ImportKeyMaterial',
-  ImportPublic: 'ImportPublic',
   GetParametersForImport: 'GetParametersForImport',
   ExportKeyMaterial: 'ExportKeyMaterial',
-  GetParametersForExport: 'GetParametersForExport'
+  GetParametersForExport: 'GetParametersForExport',
+  ImportPublic: 'ImportPublic'
 }
 
 const enroll = {

@@ -266,9 +266,20 @@ uint32_t EHSM_FFI_CALL(const char *reqJson, char *respJson)
     case EH_GEN_HMAC:
         ffi_generateHmac(payloadJson, respJson);
         break;
+
+
+        case EH_GET_PARAMETERS_FOR_IMPORT:
+            ffi_getParametersForImport(payloadJson, respJson);
+        break;
+
+
+
+
     case EH_GEN_TOKEN_HMAC:
         ffi_generateTokenHmac(payloadJson, respJson);
         break;
+
+
         case EH_IMPORT_KEY_MATERIAL:
             ffi_importKeyMaterial(payloadJson, respJson);
         break;
@@ -279,15 +290,17 @@ uint32_t EHSM_FFI_CALL(const char *reqJson, char *respJson)
         break;
 
         
-    case EH_GET_PARAMETERS_FOR_IMPORT:
-            ffi_getParametersForImport(payloadJson, respJson);
-        break;
+
     case EH_EXPORT_KEY_MATERIAL:
             ffi_exportKeyMaterial(payloadJson, respJson);
         break;
+
+
     case EH_GET_PARAMETERS_FOR_EXPORT:
             ffi_getParametersForExport(payloadJson, respJson);
         break;
+
+
     default:
         RetJsonObj retJsonObj;
         retJsonObj.setCode(retJsonObj.CODE_FAILED);
@@ -737,6 +750,8 @@ ehsm_status_t ImportKeyMaterial(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding
         return EH_OK;
 }
 
+
+
 ehsm_status_t GetParametersForImport(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec, ehsm_data_t *pubkey)
 {
     sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
@@ -761,6 +776,15 @@ ehsm_status_t GetParametersForImport(ehsm_keyblob_t *cmk, ehsm_keyspec_t keyspec
     else
         return EH_OK;
 }
+
+
+
+
+
+
+
+
+
 
 ehsm_status_t Encrypt(ehsm_keyblob_t *cmk,
                       ehsm_data_t *plaintext,
