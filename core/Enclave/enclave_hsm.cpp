@@ -162,7 +162,7 @@ static sgx_status_t check_import_key_length(int keylen, ehsm_keyspec_t keyspec)
 
 sgx_status_t enclave_get_domain_key_from_local()
 {
-    log_i("start get domain key from local.");
+    log_i("BEGIN get domain key from local.");
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
     uint32_t dk_cipher_len = sgx_calc_sealed_data_size(0, SGX_DOMAIN_KEY_SIZE);
 
@@ -173,14 +173,14 @@ sgx_status_t enclave_get_domain_key_from_local()
     uint8_t dk_cipher[dk_cipher_len] = {0};
     uint8_t tmp[SGX_DOMAIN_KEY_SIZE] = {0};
 
-    // ret = ocall_read_domain_key(&retstatus, dk_cipher, dk_cipher_len);
-    // if (ret != SGX_SUCCESS)
-    // {
-    //     log_e("failed read domain key\n");
-    //     return ret;
-    // }
+    ret = ocall_read_domain_key(&retstatus, dk_cipher, dk_cipher_len);
+    if (ret != SGX_SUCCESS)
+    {
+        log_e("failed read domain key\n");
+        return ret;
+    }
 
-    retstatus = -2;
+    //retstatus = -2;
 
     if (retstatus == 0)
     {
@@ -192,7 +192,7 @@ sgx_status_t enclave_get_domain_key_from_local()
             log_e("failed in sgx_unseal_data\n");
             return ret;
         }
-        log_i("get domain key from disk.");
+        log_i("Got domain key from disk.");
     }
     // -2: dk file does not exist.
     else if (retstatus == -2)
@@ -211,7 +211,7 @@ sgx_status_t enclave_get_domain_key_from_local()
         ret = ocall_store_domain_key(&retstatus, dk_cipher, dk_cipher_len);
         if (ret != SGX_SUCCESS || retstatus != 0)
             return SGX_ERROR_UNEXPECTED;
-        log_i("created a new domain key and stored it to disk.\n");
+        log_i("Created a new domain key and stored it to disk.\n");
     }
     else
         return SGX_ERROR_UNEXPECTED;
@@ -584,6 +584,9 @@ sgx_status_t enclave_import_key_material(ehsm_keyblob_t *cmk, size_t cmk_size,
                                          ehsm_padding_mode_t padding_mode,
                                          ehsm_data_t *key_material, size_t key_material_size)
 {
+
+    log_i("starting enclave_import_key_material ...");
+
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
 
     if (cmk == NULL ||
@@ -628,6 +631,10 @@ sgx_status_t enclave_import_key_material(ehsm_keyblob_t *cmk, size_t cmk_size,
 out:
     SAFE_MEMSET(import_key->data, import_key->datalen, 0, import_key->datalen);
     SAFE_FREE(import_key);
+
+    log_i("Ending enclave_import_key_material ...");
+
+
     return ret;
 }
 

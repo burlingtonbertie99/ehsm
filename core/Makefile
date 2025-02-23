@@ -162,7 +162,7 @@ $(Provider_Name): $(App_Cpp_Objects) App/enclave_hsm_u.o App/auto_version.h
 	@$(CXX) $^ -o $@ $(App_Link_Flags) -shared
 	@echo "LINK =>  $@"
 
-$(App_Test_Name): $(App_Cpp_Objects) $(App_Test_Cpp_Objects) App/enclave_hsm_u.o App/auto_version.h
+$(App_Test_Name): $(App_Cpp_Objects) $(App_App_Test_Cpp_ObjectsTest_Cpp_Objects) App/enclave_hsm_u.o App/auto_version.h
 	@$(CXX) $^ -o $@ $(App_Link_Flags)
 	@echo "LINK =>  $@"
 
