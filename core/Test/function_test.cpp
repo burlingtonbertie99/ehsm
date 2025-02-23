@@ -1596,8 +1596,8 @@ void test_GenerateQuote_and_VerifyQuote()
     // "/opt/intel/sgxsdk/bin/x64/sgx_sign dump -enclave libenclave-ehsm-core.signed.so -dumpfile out.log"
     std::string mr_enclave;
     std::string mr_signer;
-    std::string signedEnclaveFileName =     "libenclave-ehsm-core.signed.so";    //  SIGNED_ENCLAVE_FILENAME;
-    std::string sgxSignFileName = "sgx_sign";  //SGX_SIGNING_TOOL;
+    std::string signedEnclaveFileName = SIGNED_ENCLAVE_FILENAME;
+    std::string sgxSignFileName = SGX_SIGNING_TOOL;
     std::string tmpFileName = "ehsm_enclave_out.log";
     log_i("NAPI_GenerateQuote signedEnclaveFileName : %s\n", signedEnclaveFileName.c_str());
     log_i("NAPI_GenerateQuote sgxSignFileName : %s\n", sgxSignFileName.c_str());
