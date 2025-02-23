@@ -39,6 +39,9 @@ using namespace std;
 
 sgx_aes_gcm_256bit_key_t g_domain_key = {0};
 
+std::string publicexporter= "-----BEGIN PUBLIC KEY-----MIIBigKCAYEA1Kk+8GOwtm161+Mdk3woyaCl1NoxaSfPQlFg0NCN5rArDC1vgTWY3LPu5OR8pJ1i/uc9sAYbCOEQ20/J/ulZjTBaWpLkXhpZ+X0NQCAcoShdG2v2F/w7igGyOoOIA5HiR/Sa8Ee4sdOqLDDr6wG4GDeQplGGwVOhhTxxyGA5vauxS8KxTZlE2SU6BRB0KYTe7aJR8GW7pcR0D8IZ3EWHimlJqlbdIziVW0oRjgVg49jzJ0n4IqEQn0bs+5360hus9AYcSteJOiomTW3c1yUWFSItQt15s+336R384F4VmLN+P4mvIZ1U5cG13kzZpGEUPBWEAOOAUxwUyRLZAEN/rA255tpAg4AERalriteNxHpZxemxrDPhkuZ6jK5sUGfervkKBYK8HJXmsmqsTyctemzZbCnOxYSjOJ+oQ9RVQVr/+vtylvidHXOr7Q4rihFeEFQhbX0R4xBlWGOgbeW9l3kfVa5BmE4Ff9ZFtt9MrrtXOBUMEma5w0xCDVaiSMjPAgMBAAE=-----END PUBLIC KEY-----";
+
+
 static uint32_t get_asymmetric_max_encrypt_plaintext_size(ehsm_keyspec_t keyspec, ehsm_padding_mode_t padding_mode)
 {
     uint32_t padding_size;
@@ -323,6 +326,7 @@ sgx_status_t enclave_import_public(ehsm_keyblob_t *cmk, size_t cmk_size,
 {
 
 
+    //return SGX_SUCCESS;
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
 
 
@@ -361,7 +365,7 @@ sgx_status_t enclave_import_public(ehsm_keyblob_t *cmk, size_t cmk_size,
 
 
 
-
+    log_i("RSA DECRYPTING.....  1 \n");
     ret = ehsm_rsa_decrypt(cmk, padding_mode, key_material, &import_key_tmp);
 
 
@@ -388,7 +392,7 @@ sgx_status_t enclave_import_public(ehsm_keyblob_t *cmk, size_t cmk_size,
 
 
 
-
+    log_i("RSA DECRYPTING.....  1 \n");
     ret = ehsm_rsa_decrypt(cmk, padding_mode, key_material, import_key);
 
 
@@ -400,7 +404,7 @@ sgx_status_t enclave_import_public(ehsm_keyblob_t *cmk, size_t cmk_size,
 
 
 
-
+    log_i("Importing PUBLIC key.....  check_import_key_length \n");
     ret = check_import_key_length(import_key->datalen, cmk->metadata.keyspec);
 
 

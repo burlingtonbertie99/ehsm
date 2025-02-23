@@ -519,7 +519,7 @@ extern "C"
 
 
 
-
+        log_i("Importing PUBLIC key.....   \n");
         ret = ImportPublic(cmk, padding_mode, key_material);
 
 
@@ -533,6 +533,8 @@ extern "C"
 
 
             retJsonObj.setMessage("Import key failed.");
+
+            log_e("Import PUBLIC failed, error message: %s \n", "General failure");
 
 
             goto out;

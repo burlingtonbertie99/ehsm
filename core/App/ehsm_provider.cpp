@@ -529,6 +529,8 @@ ehsm_status_t ImportPublic(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding_mode
 {
 
 
+    //return EH_OK;
+
     sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;
 
 
@@ -553,7 +555,7 @@ ehsm_status_t ImportPublic(ehsm_keyblob_t *cmk, ehsm_padding_mode_t padding_mode
 
 
 
-    ret = enclave_import_key_material(g_enclave_id,
+    ret = enclave_import_public(g_enclave_id,
 
 
                                       &sgxStatus,

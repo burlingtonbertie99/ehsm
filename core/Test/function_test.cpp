@@ -61,9 +61,14 @@ step3. ....
 void test_import_public() {
 
     log_i("============test_import_public start==========\n");
-    std::string plaintext[] = {"Test1234-AES128", "Test1234-AES192",
-                               "Test1234-AES256", "Test1234-SM4-CTR", "Test1234-SM4-CBC"};
+    std::string plaintext[] = {"Test1234-AES128"
+    //    , "Test1234-AES192",
+      //                         "Test1234-AES256", "Test1234-SM4-CTR", "Test1234-SM4-CBC"
+
+    };
      std::string  keyid[] = {"aac3e45a-d3dc-4791-89b6-4ada0e38e6ef"};
+
+    std::string key_material= "-----BEGIN PUBLIC KEY-----MIIBigKCAYEA1Kk+8GOwtm161+Mdk3woyaCl1NoxaSfPQlFg0NCN5rArDC1vgTWY3LPu5OR8pJ1i/uc9sAYbCOEQ20/J/ulZjTBaWpLkXhpZ+X0NQCAcoShdG2v2F/w7igGyOoOIA5HiR/Sa8Ee4sdOqLDDr6wG4GDeQplGGwVOhhTxxyGA5vauxS8KxTZlE2SU6BRB0KYTe7aJR8GW7pcR0D8IZ3EWHimlJqlbdIziVW0oRjgVg49jzJ0n4IqEQn0bs+5360hus9AYcSteJOiomTW3c1yUWFSItQt15s+336R384F4VmLN+P4mvIZ1U5cG13kzZpGEUPBWEAOOAUxwUyRLZAEN/rA255tpAg4AERalriteNxHpZxemxrDPhkuZ6jK5sUGfervkKBYK8HJXmsmqsTyctemzZbCnOxYSjOJ+oQ9RVQVr/+vtylvidHXOr7Q4rihFeEFQhbX0R4xBlWGOgbeW9l3kfVa5BmE4Ff9ZFtt9MrrtXOBUMEma5w0xCDVaiSMjPAgMBAAE=-----END PUBLIC KEY-----";
 
     case_number += sizeof(plaintext) / sizeof(plaintext[0]);
 
@@ -84,7 +89,7 @@ void test_import_public() {
         JsonObj payload_json;
         payload_json.addData_string("keyid", keyid[i]);
         payload_json.addData_uint32("importtoken", EH_INTERNAL_KEY);
-        payload_json.addData_uint32("key_material", EH_KEYUSAGE_ENCRYPT_DECRYPT);
+        payload_json.addData_string("key_material", key_material);
         payload_json.addData_uint32("padding_mode", EH_KEYUSAGE_ENCRYPT_DECRYPT);
         param_json.addData_uint32("action", EH_IMPORT_PUBLIC);
         param_json.addData_JsonValue("payload", payload_json.getJson());
