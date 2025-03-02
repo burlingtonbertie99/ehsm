@@ -712,6 +712,169 @@ out:
     return ret;
 }
 
+typedef unsigned char uint8_t;
+#include <cstdio>
+#include <cstdlib>
+
+char *uint8tob( uint8_t value ) {
+    static uint8_t base = 2;
+    static char buffer[8] = {0};
+
+    int i = 8;
+    for( ; i ; --i, value /= base ) {
+        buffer[i] = "01"[value % base];
+    }
+
+    return &buffer[i+1];
+}
+
+char *convert_bytes_to_binary_string( uint8_t *bytes, size_t count ) {
+    if ( count < 1 ) {
+        return NULL;
+    }
+
+    size_t buffer_size = 8 * count + 1;
+    char *buffer ;//= calloc( 1, buffer_size );
+
+    SAFE_MEMSET(buffer, buffer_size, 1, buffer_size);
+
+    if ( buffer == NULL ) {
+        return NULL;
+    }
+
+    char *output = buffer;
+    for ( int i = 0 ; i < count ; i++ ) {
+        memcpy( output, uint8tob( bytes[i] ), 8 );
+        output += 8;
+    }
+
+    return buffer;
+};
+
+// char *convert(uint8_t *a)
+// {
+//     char* buffer2;
+//     int i;
+//
+//     buffer2 = malloc(9);
+//     if (!buffer2)
+//         return NULL;
+//
+//     buffer2[8] = 0;
+//     for (i = 0; i <= 7; i++)
+//         buffer2[7 - i] = (((*a) >> i) & (0x01)) + '0';
+//
+//     puts(buffer2);
+//
+//     return buffer2;
+// }
+
+sgx_status_t ehsm_rsa_encrypt_datakey(const ehsm_keyblob_t *ukey,
+                              ehsm_padding_mode_t padding_mode,
+                              const ehsm_data_t *plaintext,
+                              ehsm_data_t *ciphertext)
+{
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+
+    // verify padding mode
+    int paddingMode = getPaddingMode(padding_mode);
+    if (paddingMode != RSA_PKCS1_PADDING && paddingMode != RSA_PKCS1_OAEP_PADDING)
+        return SGX_ERROR_INVALID_PARAMETER;
+
+    uint8_t *rsa_keypair = NULL;
+    uint8_t *data = NULL;
+    OSSL_DECODER_CTX *dctx = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL;
+    EVP_PKEY *pkey = NULL;
+    size_t dataLen = 0;
+    size_t outLen = 0;
+
+    // load rsa public key
+    rsa_keypair = (uint8_t *)malloc(ukey->keybloblen);
+    if (rsa_keypair == NULL)
+        goto out;
+
+    if (SGX_SUCCESS != ehsm_parse_keyblob(rsa_keypair,
+                                          (sgx_aes_gcm_data_ex_t *)ukey->keyblob))
+        goto out;
+
+    dataLen = strlen((const char *)rsa_keypair) + 1;
+   // data = rsa_keypair;
+   //
+    // uint8_t example = 0x14;
+    // char *final_string;
+    //
+    // final_string = convert(&example);
+
+    uint8_t bytes[4] = {  0b10000000, 0b11110000, 0b00001111, 0b11110001 };
+
+    char *string = convert_bytes_to_binary_string( bytes, 4 );
+
+    uint8_t *thepubkey =
+            "-----BEGIN PUBLIC KEY-----MIIBigKCAYEA1Kk+8GOwtm161+Mdk3woyaCl1NoxaSfPQlFg0NCN5rArDC1vgTWY3LPu5OR8pJ1i/uc9sAYbCOEQ20/J/ulZjTBaWpLkXhpZ+X0NQCAcoShdG2v2F/w7igGyOoOIA5HiR/Sa8Ee4sdOqLDDr6wG4GDeQplGGwVOhhTxxyGA5vauxS8KxTZlE2SU6BRB0KYTe7aJR8GW7pcR0D8IZ3EWHimlJqlbdIziVW0oRjgVg49jzJ0n4IqEQn0bs+5360hus9AYcSteJOiomTW3c1yUWFSItQt15s+336R384F4VmLN+P4mvIZ1U5cG13kzZpGEUPBWEAOOAUxwUyRLZAEN/rA255tpAg4AERalriteNxHpZxemxrDPhkuZ6jK5sUGfervkKBYK8HJXmsmqsTyctemzZbCnOxYSjOJ+oQ9RVQVr/+vtylvidHXOr7Q4rihFeEFQhbX0R4xBlWGOgbeW9l3kfVa5BmE4Ff9ZFtt9MrrtXOBUMEma5w0xCDVaiSMjPAgMBAAE=-----END PUBLIC KEY-----";
+
+
+    data =  reinterpret_cast<uint8_t *>(thepubkey);
+;
+    dctx = OSSL_DECODER_CTX_new_for_pkey(&pkey, "PEM", NULL,
+                                         "RSA",
+                                         OSSL_KEYMGMT_SELECT_PUBLIC_KEY,
+                                         NULL, NULL);
+    if (dctx == NULL)
+        goto out;
+
+    if (!OSSL_DECODER_from_data(dctx, (const unsigned char **)&data, &dataLen))
+        goto out;
+
+    pkey_ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (pkey_ctx == NULL)
+        goto out;
+
+    if (EVP_PKEY_encrypt_init(pkey_ctx) != 1)
+        goto out;
+
+    if (EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, paddingMode) <= 0)
+        goto out;
+
+    if (EVP_PKEY_CTX_set_rsa_oaep_md(pkey_ctx, EVP_sha256()) <= 0)
+        goto out;
+
+    if (ciphertext->datalen == 0)
+    {
+        if (EVP_PKEY_encrypt(pkey_ctx, NULL, &outLen, plaintext->data, (size_t)plaintext->datalen) <= 0)
+        {
+            ret = SGX_ERROR_UNEXPECTED;
+            goto out;
+        }
+        ciphertext->datalen = outLen;
+        ret = SGX_SUCCESS;
+        goto out;
+    }
+
+    outLen = ciphertext->datalen;
+    if (EVP_PKEY_encrypt(pkey_ctx,
+                         ciphertext->data,
+                         &outLen,
+                         plaintext->data,
+                         (size_t)plaintext->datalen) <= 0)
+    {
+        ret = SGX_ERROR_UNEXPECTED;
+        goto out;
+    }
+
+    ret = SGX_SUCCESS;
+out:
+    EVP_PKEY_free(pkey);
+    EVP_PKEY_CTX_free(pkey_ctx);
+    OSSL_DECODER_CTX_free(dctx);
+
+    SAFE_MEMSET(rsa_keypair, dataLen, 0, dataLen);
+    SAFE_FREE(rsa_keypair);
+
+    return ret;
+}
+
+
 sgx_status_t ehsm_rsa_decrypt(const ehsm_keyblob_t *cmk,
                               ehsm_padding_mode_t padding_mode,
                               const ehsm_data_t *ciphertext,

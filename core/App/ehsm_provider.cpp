@@ -1122,6 +1122,17 @@ out:
         return EH_OK;
 }
 
+
+
+
+
+
+
+
+
+
+
+
 ehsm_status_t Enroll(ehsm_data_t *appid, ehsm_data_t *apikey)
 {
     sgx_status_t sgxStatus = SGX_ERROR_UNEXPECTED;

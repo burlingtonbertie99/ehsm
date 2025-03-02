@@ -80,6 +80,13 @@ sgx_status_t ehsm_rsa_encrypt(const ehsm_keyblob_t *cmk,
                               const ehsm_data_t *plaintext,
                               ehsm_data_t *ciphertext);
 
+
+sgx_status_t ehsm_rsa_encrypt_datakey(const ehsm_keyblob_t *cmk,
+                              ehsm_padding_mode_t padding_mode,
+                              const ehsm_data_t *plaintext,
+                              ehsm_data_t *ciphertext);
+
+
 sgx_status_t ehsm_rsa_decrypt(const ehsm_keyblob_t *cmk,
                               ehsm_padding_mode_t padding_mode,
                               const ehsm_data_t *ciphertext,

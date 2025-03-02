@@ -780,7 +780,62 @@ sgx_status_t enclave_decrypt(ehsm_keyblob_t *cmk, size_t cmk_size,
     return ret;
 }
 
-sgx_status_t enclave_asymmetric_encrypt(const ehsm_keyblob_t *cmk, size_t cmk_size,
+
+
+
+sgx_status_t enclave_asymmetric_encrypt_datakey(const ehsm_keyblob_t *ukey,
+                                        size_t cmk_size,
+                                        ehsm_padding_mode_t padding_mode,
+                                        ehsm_data_t *plaintext, size_t plaintext_size,
+                                        ehsm_data_t *ciphertext, size_t ciphertext_size)
+{
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+    //
+    // if (ukey == NULL ||
+    //     cmk_size != APPEND_SIZE_TO_KEYBLOB_T(cmk->keybloblen) ||
+    //     cmk->keybloblen == 0 ||
+    //     cmk->metadata.origin != EH_INTERNAL_KEY ||
+    //     cmk->metadata.keyusage != EH_KEYUSAGE_ENCRYPT_DECRYPT)
+    //     return SGX_ERROR_INVALID_PARAMETER;
+    //
+    // if (plaintext == NULL ||
+    //     plaintext_size != APPEND_SIZE_TO_DATA_T(plaintext->datalen) ||
+    //     plaintext->datalen == 0 ||
+    //     /* Verify the maximum plaintext length supported by different keyspac */
+    //     plaintext->datalen > get_asymmetric_max_encrypt_plaintext_size(cmk->metadata.keyspec, padding_mode))
+    //     return SGX_ERROR_INVALID_PARAMETER;
+    //
+    // if (ciphertext == NULL ||
+    //     ciphertext_size != APPEND_SIZE_TO_DATA_T(ciphertext->datalen))
+    //     return SGX_ERROR_INVALID_PARAMETER;
+    //
+
+
+
+    switch (ukey->metadata.keyspec)
+    {
+        case EH_RSA_2048:
+        case EH_RSA_3072:
+        case EH_RSA_4096:
+            ret = ehsm_rsa_encrypt_datakey(ukey, padding_mode, plaintext, ciphertext); //paddingMode != RSA_PKCS1_PADDING
+        break;
+        case EH_SM2:
+            ret = ehsm_sm2_encrypt(ukey, plaintext, ciphertext);
+        break;
+        default:
+            return SGX_ERROR_INVALID_PARAMETER;
+    }
+    return ret;
+}
+
+
+
+
+
+
+
+sgx_status_t enclave_asymmetric_encrypt(const ehsm_keyblob_t *cmk,
+                                        size_t cmk_size,
                                         ehsm_padding_mode_t padding_mode,
                                         ehsm_data_t *plaintext, size_t plaintext_size,
                                         ehsm_data_t *ciphertext, size_t ciphertext_size)
@@ -807,19 +862,25 @@ sgx_status_t enclave_asymmetric_encrypt(const ehsm_keyblob_t *cmk, size_t cmk_si
 
     switch (cmk->metadata.keyspec)
     {
-    case EH_RSA_2048:
-    case EH_RSA_3072:
-    case EH_RSA_4096:
-        ret = ehsm_rsa_encrypt(cmk, padding_mode, plaintext, ciphertext);
+        case EH_RSA_2048:
+        case EH_RSA_3072:
+        case EH_RSA_4096:
+            ret = ehsm_rsa_encrypt(cmk, padding_mode, plaintext, ciphertext); //paddingMode != RSA_PKCS1_PADDING
         break;
-    case EH_SM2:
-        ret = ehsm_sm2_encrypt(cmk, plaintext, ciphertext);
+        case EH_SM2:
+            ret = ehsm_sm2_encrypt(cmk, plaintext, ciphertext);
         break;
-    default:
-        return SGX_ERROR_INVALID_PARAMETER;
+        default:
+            return SGX_ERROR_INVALID_PARAMETER;
     }
     return ret;
 }
+
+
+
+
+
+
 
 sgx_status_t enclave_asymmetric_decrypt(const ehsm_keyblob_t *cmk, size_t cmk_size,
                                         ehsm_padding_mode_t padding_mode,
@@ -1161,6 +1222,17 @@ out:
     return ret;
 }
 
+
+
+
+
+
+
+
+
+
+
+
 sgx_status_t enclave_export_datakey(ehsm_keyblob_t *cmk, size_t cmk_size,
                                     ehsm_data_t *aad, size_t aad_size,
                                     ehsm_data_t *olddatakey, size_t olddatakey_size,
@@ -1253,7 +1325,7 @@ sgx_status_t enclave_export_datakey(ehsm_keyblob_t *cmk, size_t cmk_size,
     case EH_RSA_2048:
     case EH_RSA_3072:
     case EH_RSA_4096:
-        ret = enclave_asymmetric_encrypt(ukey, ukey_size, EH_RSA_PKCS1_OAEP, tmp_datakey, tmp_datakey_size, newdatakey, newdatakey_size);
+        ret = enclave_asymmetric_encrypt_datakey(ukey, ukey_size, EH_RSA_PKCS1_OAEP, tmp_datakey, tmp_datakey_size, newdatakey, newdatakey_size);
         break;
     case EH_SM2:
         ret = enclave_asymmetric_encrypt(ukey, ukey_size, EH_PAD_NONE, tmp_datakey, tmp_datakey_size, newdatakey, newdatakey_size);
@@ -1270,6 +1342,29 @@ out:
     SAFE_FREE(tmp_datakey);
     return ret;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 sgx_status_t enclave_get_target_info(sgx_target_info_t *target_info)
 {
